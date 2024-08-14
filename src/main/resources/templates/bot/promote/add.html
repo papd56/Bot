@@ -32,6 +32,17 @@
                     </div>
                 </div>
             </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label is-required">状态：</label>
+                    <div class="col-sm-8">
+                        <div class="radio-box" th:each="dict : ${@dict.getType('status')}">
+                            <input type="radio" th:id="${'status_' + dict.dictCode}" name="status" th:value="${dict.dictValue}" th:checked="${dict.default}" required>
+                            <label th:for="${'status_' + dict.dictCode}" th:text="${dict.dictLabel}"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </form>
     </div>
     <th:block th:include="include :: footer" />

@@ -19,6 +19,13 @@
                                 <input type="text" name="command"/>
                             </li>
                             <li>
+                                <label>状态：</label>
+                                <select name="status" th:with="type=${@dict.getType('status')}">
+                                    <option value="">所有</option>
+                                    <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
+                                </select>
+                            </li>
+                            <li>
                                 <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
                                 <a class="btn btn-warning btn-rounded btn-sm" onclick="$.form.reset()"><i class="fa fa-refresh"></i>&nbsp;重置</a>
                             </li>
@@ -50,6 +57,7 @@
     <script th:inline="javascript">
         var editFlag = [[${@permission.hasPermi('bot:promote:edit')}]];
         var removeFlag = [[${@permission.hasPermi('bot:promote:remove')}]];
+        var statusDatas = [[${@dict.getType('status')}]];
         var prefix = ctx + "bot/promote";
 
         $(function() {
@@ -82,7 +90,10 @@
                 },
                 {
                     field: 'status',
-                    title: '状态'
+                    title: '状态',
+                    formatter: function(value, row, index) {
+                       return $.table.selectDictLabel(statusDatas, value);
+                    }
                 },
                 {
                     title: '操作',
