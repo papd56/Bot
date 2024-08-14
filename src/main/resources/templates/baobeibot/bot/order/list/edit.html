@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改订单列')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-bot/order/list-edit" th:object="${botOrderList}">
+            <input name="id" th:field="*{id}" type="hidden">
+            <div class="col-xs-12">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">交易用户：</label>
+                    <div class="col-sm-8">
+                        <input name="tradeUser" th:field="*{tradeUser}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">交易信息：</label>
+                    <div class="col-sm-8">
+                        <textarea name="tradeInfo" class="form-control">[[*{tradeInfo}]]</textarea>
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">发起报备人：</label>
+                    <div class="col-sm-8">
+                        <input name="initiatorReportUser" th:field="*{initiatorReportUser}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-12">
+                <div class="form-group">
+                    <label class="col-sm-3 control-label">交易时间：</label>
+                    <div class="col-sm-8">
+                        <input name="tradeTime" th:field="*{tradeTime}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var prefix = ctx + "baobeibot/bot/order/list";
+        $("#form-bot/order/list-edit").validate({
+            focusCleanup: true
+        });
+
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/edit", $('#form-bot/order/list-edit').serialize());
+            }
+        }
+    </script>
+</body>
+</html>
