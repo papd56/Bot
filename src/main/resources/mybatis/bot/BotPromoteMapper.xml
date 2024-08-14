@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.bot.promote.mapper.BotPromoteMapper">
+    
+    <resultMap type="BotPromote" id="BotPromoteResult">
+        <result property="id"    column="id"    />
+        <result property="title"    column="title"    />
+        <result property="command"    column="command"    />
+        <result property="content"    column="content"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectBotPromoteVo">
+        select id, title, command, content, status from bot_promote
+    </sql>
+
+    <select id="selectBotPromoteList" parameterType="BotPromote" resultMap="BotPromoteResult">
+        <include refid="selectBotPromoteVo"/>
+        <where>  
+            <if test="title != null  and title != ''"> and title = #{title}</if>
+            <if test="command != null  and command != ''"> and command = #{command}</if>
+            <if test="content != null  and content != ''"> and content = #{content}</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectBotPromoteById" parameterType="Long" resultMap="BotPromoteResult">
+        <include refid="selectBotPromoteVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertBotPromote" parameterType="BotPromote" useGeneratedKeys="true" keyProperty="id">
+        insert into bot_promote
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="title != null and title != ''">title,</if>
+            <if test="command != null and command != ''">command,</if>
+            <if test="content != null">content,</if>
+            <if test="status != null and status != ''">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="title != null and title != ''">#{title},</if>
+            <if test="command != null and command != ''">#{command},</if>
+            <if test="content != null">#{content},</if>
+            <if test="status != null and status != ''">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBotPromote" parameterType="BotPromote">
+        update bot_promote
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="title != null and title != ''">title = #{title},</if>
+            <if test="command != null and command != ''">command = #{command},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBotPromoteById" parameterType="Long">
+        delete from bot_promote where id = #{id}
+    </delete>
+
+    <delete id="deleteBotPromoteByIds" parameterType="String">
+        delete from bot_promote where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>

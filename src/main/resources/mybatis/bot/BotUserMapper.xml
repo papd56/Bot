@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.bot.user.mapper.BotUserMapper">
+    
+    <resultMap type="BotUser" id="BotUserResult">
+        <result property="id"    column="id"    />
+        <result property="botId"    column="bot_id"    />
+        <result property="userId"    column="user_id"    />
+        <result property="userName"    column="user_name"    />
+        <result property="userNickname"    column="user_nickname"    />
+        <result property="status"    column="status"    />
+    </resultMap>
+
+    <sql id="selectBotUserVo">
+        select id, bot_id, user_id, user_name, user_nickname, status from bot_user
+    </sql>
+
+    <select id="selectBotUserList" parameterType="BotUser" resultMap="BotUserResult">
+        <include refid="selectBotUserVo"/>
+        <where>  
+            <if test="botId != null  and botId != ''"> and bot_id = #{botId}</if>
+            <if test="userId != null  and userId != ''"> and user_id = #{userId}</if>
+            <if test="userName != null  and userName != ''"> and user_name like concat('%', #{userName}, '%')</if>
+            <if test="userNickname != null  and userNickname != ''"> and user_nickname like concat('%', #{userNickname}, '%')</if>
+            <if test="status != null  and status != ''"> and status = #{status}</if>
+        </where>
+    </select>
+    
+    <select id="selectBotUserById" parameterType="Long" resultMap="BotUserResult">
+        <include refid="selectBotUserVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertBotUser" parameterType="BotUser" useGeneratedKeys="true" keyProperty="id">
+        insert into bot_user
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="botId != null and botId != ''">bot_id,</if>
+            <if test="userId != null and userId != ''">user_id,</if>
+            <if test="userName != null and userName != ''">user_name,</if>
+            <if test="userNickname != null and userNickname != ''">user_nickname,</if>
+            <if test="status != null and status != ''">status,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="botId != null and botId != ''">#{botId},</if>
+            <if test="userId != null and userId != ''">#{userId},</if>
+            <if test="userName != null and userName != ''">#{userName},</if>
+            <if test="userNickname != null and userNickname != ''">#{userNickname},</if>
+            <if test="status != null and status != ''">#{status},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBotUser" parameterType="BotUser">
+        update bot_user
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="botId != null and botId != ''">bot_id = #{botId},</if>
+            <if test="userId != null and userId != ''">user_id = #{userId},</if>
+            <if test="userName != null and userName != ''">user_name = #{userName},</if>
+            <if test="userNickname != null and userNickname != ''">user_nickname = #{userNickname},</if>
+            <if test="status != null and status != ''">status = #{status},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBotUserById" parameterType="Long">
+        delete from bot_user where id = #{id}
+    </delete>
+
+    <delete id="deleteBotUserByIds" parameterType="String">
+        delete from bot_user where id in 
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
