@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改群组列')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-group-edit" th:object="${botGroupList}">
+            <input name="id" th:field="*{id}" type="hidden">
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">群组id：</label>
+                    <div class="col-sm-8">
+                        <input name="groupId" th:field="*{groupId}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">群组名称：</label>
+                    <div class="col-sm-8">
+                        <input name="groupName" th:field="*{groupName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">用户名称：</label>
+                    <div class="col-sm-8">
+                        <input name="userName" th:field="*{userName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">用户昵称：</label>
+                    <div class="col-sm-8">
+                        <input name="nickName" th:field="*{nickName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">是否是管理员：true 或者 false：</label>
+                    <div class="col-sm-8">
+                        <input name="isNotManage" th:field="*{isNotManage}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">押群金额：</label>
+                    <div class="col-sm-8">
+                        <input name="groupAmount" th:field="*{groupAmount}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">交易中金额：</label>
+                    <div class="col-sm-8">
+                        <input name="trandPendingAmount" th:field="*{trandPendingAmount}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">剩余交易金额：</label>
+                    <div class="col-sm-8">
+                        <input name="balance" th:field="*{balance}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">完成金额：</label>
+                    <div class="col-sm-8">
+                        <input name="finishAmount" th:field="*{finishAmount}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">群组编号：</label>
+                    <div class="col-sm-8">
+                        <input name="groupNumber" th:field="*{groupNumber}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">老板tg号：</label>
+                    <div class="col-sm-8">
+                        <input name="boosTgId" th:field="*{boosTgId}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var prefix = ctx + "baobeibot/group";
+        $("#form-group-edit").validate({
+            focusCleanup: true
+        });
+
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/edit", $('#form-group-edit').serialize());
+            }
+        }
+    </script>
+</body>
+</html>

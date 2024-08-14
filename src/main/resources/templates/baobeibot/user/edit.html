@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改机器人用户列')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-user-edit" th:object="${botUserList}">
+            <input name="id" th:field="*{id}" type="hidden">
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">tg唯一标识：</label>
+                    <div class="col-sm-8">
+                        <input name="tgUnqiueId" th:field="*{tgUnqiueId}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">群组名称：</label>
+                    <div class="col-sm-8">
+                        <input name="groupName" th:field="*{groupName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">用户名称：</label>
+                    <div class="col-sm-8">
+                        <input name="userName" th:field="*{userName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">用户昵称：</label>
+                    <div class="col-sm-8">
+                        <input name="nickName" th:field="*{nickName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var prefix = ctx + "baobeibot/user";
+        $("#form-user-edit").validate({
+            focusCleanup: true
+        });
+
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/edit", $('#form-user-edit').serialize());
+            }
+        }
+    </script>
+</body>
+</html>
