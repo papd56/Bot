@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="zh" xmlns:th="http://www.thymeleaf.org" >
+<head>
+    <th:block th:include="include :: header('修改群组管理')" />
+</head>
+<body class="white-bg">
+    <div class="wrapper wrapper-content animated fadeInRight ibox-content">
+        <form class="form-horizontal m" id="form-group-edit" th:object="${botGroup}">
+            <input name="id" th:field="*{id}" type="hidden">
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">机器人id：</label>
+                    <div class="col-sm-8">
+                        <input name="botId" th:field="*{botId}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">群组id：</label>
+                    <div class="col-sm-8">
+                        <input name="groupId" th:field="*{groupId}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label class="col-sm-4 control-label">群名称：</label>
+                    <div class="col-sm-8">
+                        <input name="groupName" th:field="*{groupName}" class="form-control" type="text">
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    <th:block th:include="include :: footer" />
+    <script th:inline="javascript">
+        var prefix = ctx + "bot/group";
+        $("#form-group-edit").validate({
+            focusCleanup: true
+        });
+
+        function submitHandler() {
+            if ($.validate.form()) {
+                $.operate.save(prefix + "/edit", $('#form-group-edit').serialize());
+            }
+        }
+    </script>
+</body>
+</html>
