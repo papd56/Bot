@@ -4,7 +4,6 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
-@Component
 public class SendUtils {
 
     public static SendMessage sendMessageInit(Long chatId, String text) {
