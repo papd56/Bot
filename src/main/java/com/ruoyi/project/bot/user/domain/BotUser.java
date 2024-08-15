@@ -34,66 +34,66 @@ public class BotUser extends BaseEntity
     @Excel(name = "用户昵称")
     private String userNickname;
 
-    /** 状态 */
-    @Excel(name = "状态")
+    /** 权限状态 */
+    @Excel(name = "权限状态")
     private String status;
 
-    public void setId(Long id) 
+    public void setId(Long id)
     {
         this.id = id;
     }
 
-    public Long getId() 
+    public Long getId()
     {
         return id;
     }
 
-    public void setBotId(String botId) 
+    public void setBotId(String botId)
     {
         this.botId = botId;
     }
 
-    public String getBotId() 
+    public String getBotId()
     {
         return botId;
     }
 
-    public void setUserId(String userId) 
+    public void setUserId(String userId)
     {
         this.userId = userId;
     }
 
-    public String getUserId() 
+    public String getUserId()
     {
         return userId;
     }
 
-    public void setUserName(String userName) 
+    public void setUserName(String userName)
     {
         this.userName = userName;
     }
 
-    public String getUserName() 
+    public String getUserName()
     {
         return userName;
     }
 
-    public void setUserNickname(String userNickname) 
+    public void setUserNickname(String userNickname)
     {
         this.userNickname = userNickname;
     }
 
-    public String getUserNickname() 
+    public String getUserNickname()
     {
         return userNickname;
     }
 
-    public void setStatus(String status) 
+    public void setStatus(String status)
     {
         this.status = status;
     }
 
-    public String getStatus() 
+    public String getStatus()
     {
         return status;
     }

@@ -27,7 +27,7 @@
                                 <input type="text" name="userNickname"/>
                             </li>
                             <li>
-                                <label>状态：</label>
+                                <label>权限状态：</label>
                                 <select name="status" th:with="type=${@dict.getType('status')}">
                                     <option value="">所有</option>
                                     <option th:each="dict : ${type}" th:text="${dict.dictLabel}" th:value="${dict.dictValue}"></option>
@@ -102,7 +102,7 @@
                 },
                 {
                     field: 'status',
-                    title: '状态',
+                    title: '权限状态',
                     formatter: function(value, row, index) {
                        return $.table.selectDictLabel(statusDatas, value);
                     }

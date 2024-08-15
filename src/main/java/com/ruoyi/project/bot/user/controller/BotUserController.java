@@ -1,23 +1,22 @@
 package com.ruoyi.project.bot.user.controller;
 
-import java.util.List;
+import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.framework.aspectj.lang.annotation.Anonymous;
+import com.ruoyi.framework.aspectj.lang.annotation.Log;
+import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
+import com.ruoyi.framework.web.controller.BaseController;
+import com.ruoyi.framework.web.domain.AjaxResult;
+import com.ruoyi.framework.web.page.TableDataInfo;
+import com.ruoyi.project.bot.RedisCacheService;
+import com.ruoyi.project.bot.user.domain.BotUser;
+import com.ruoyi.project.bot.user.service.IBotUserService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import com.ruoyi.framework.aspectj.lang.annotation.Log;
-import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
-import com.ruoyi.project.bot.user.domain.BotUser;
-import com.ruoyi.project.bot.user.service.IBotUserService;
-import com.ruoyi.framework.web.controller.BaseController;
-import com.ruoyi.framework.web.domain.AjaxResult;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.framework.web.page.TableDataInfo;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 用户管理Controller
@@ -29,10 +28,14 @@ import com.ruoyi.framework.web.page.TableDataInfo;
 @RequestMapping("/bot/user")
 public class BotUserController extends BaseController
 {
+
     private String prefix = "bot/user";
 
     @Autowired
     private IBotUserService botUserService;
+
+    @Autowired
+    private RedisCacheService redisCacheService;
 
     @RequiresPermissions("bot:user:view")
     @GetMapping()
@@ -52,6 +55,19 @@ public class BotUserController extends BaseController
         startPage();
         List<BotUser> list = botUserService.selectBotUserList(botUser);
         return getDataTable(list);
+    }
+
+    /**
+     * 查询用户列表并缓存
+     */
+    @Anonymous
+    @PostMapping("/userList")
+    @ResponseBody
+    public void userList()
+    {
+        botUserService.selectBotUserList(new BotUser()).forEach(botUser -> {
+            redisCacheService.botUser(botUser);
+        });
     }
 
     /**
@@ -86,7 +102,20 @@ public class BotUserController extends BaseController
     @ResponseBody
     public AjaxResult addSave(BotUser botUser)
     {
+        redisCacheService.botUser(botUser);
         return toAjax(botUserService.insertBotUser(botUser));
+    }
+
+    /**
+     * 新增用户
+     */
+    @Anonymous
+    @PostMapping("/addUser")
+    @ResponseBody
+    public int addUser(@RequestBody BotUser botUser)
+    {
+        redisCacheService.botUser(botUser);
+        return botUserService.insertBotUser(botUser);
     }
 
     /**
@@ -110,6 +139,7 @@ public class BotUserController extends BaseController
     @ResponseBody
     public AjaxResult editSave(BotUser botUser)
     {
+        redisCacheService.botUser(botUser);
         return toAjax(botUserService.updateBotUser(botUser));
     }
 
