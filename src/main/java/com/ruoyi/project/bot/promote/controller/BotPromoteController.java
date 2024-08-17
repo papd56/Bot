@@ -106,7 +106,7 @@ public class BotPromoteController extends BaseController
     @ResponseBody
     public AjaxResult addSave(BotPromote botPromote)
     {
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(botPromote.getCommand()))) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey("promote:"+botPromote.getCommand()))) {
             redisCacheService.botPromote(botPromote);
             return toAjax(botPromoteService.insertBotPromote(botPromote));
         }
@@ -134,11 +134,8 @@ public class BotPromoteController extends BaseController
     @ResponseBody
     public AjaxResult editSave(BotPromote botPromote)
     {
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(botPromote.getCommand()))) {
-            redisCacheService.botPromote(botPromote);
-            return toAjax(botPromoteService.updateBotPromote(botPromote));
-        }
-        return toAjax(0);
+        redisCacheService.botPromote(botPromote);
+        return toAjax(botPromoteService.updateBotPromote(botPromote));
     }
 
     /**

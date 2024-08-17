@@ -106,7 +106,7 @@ public class BotUserController extends BaseController
     @ResponseBody
     public AjaxResult addSave(BotUser botUser)
     {
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(botUser.getUserName()))) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey("user:"+botUser.getUserName()))) {
             redisCacheService.botUser(botUser);
             return toAjax(botUserService.insertBotUser(botUser));
         }
@@ -121,7 +121,7 @@ public class BotUserController extends BaseController
     @ResponseBody
     public int addUser(@RequestBody BotUser botUser)
     {
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(botUser.getUserName()))) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey("user:"+botUser.getUserName()))) {
             redisCacheService.botUser(botUser);
             return botUserService.insertBotUser(botUser);
         }
@@ -134,10 +134,10 @@ public class BotUserController extends BaseController
     @Anonymous
     @PostMapping("/addUsers")
     @ResponseBody
-    public void addUser(@RequestBody List<BotUser> botUsers)
+    public void addUsers(@RequestBody List<BotUser> botUsers)
     {
         botUsers.forEach(botUser -> {
-            if (Boolean.FALSE.equals(redisTemplate.hasKey(botUser.getUserName()))) {
+            if (Boolean.FALSE.equals(redisTemplate.hasKey("user:"+botUser.getUserName()))) {
                 redisCacheService.botUser(botUser);
                 botUserService.insertBotUser(botUser);
             }
@@ -165,11 +165,8 @@ public class BotUserController extends BaseController
     @ResponseBody
     public AjaxResult editSave(BotUser botUser)
     {
-        if (Boolean.FALSE.equals(redisTemplate.hasKey(botUser.getUserName()))) {
-            redisCacheService.botUser(botUser);
-            return toAjax(botUserService.updateBotUser(botUser));
-        }
-        return toAjax(0);
+        redisCacheService.botUser(botUser);
+        return toAjax(botUserService.updateBotUser(botUser));
     }
 
     /**
