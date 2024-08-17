@@ -12,6 +12,7 @@ import com.ruoyi.project.bot.promote.domain.BotPromote;
 import com.ruoyi.project.bot.promote.service.IBotPromoteService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,9 @@ public class BotPromoteController extends BaseController
 
     @Autowired
     private RedisCacheService redisCacheService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @RequiresPermissions("bot:promote:view")
     @GetMapping()
@@ -102,8 +106,11 @@ public class BotPromoteController extends BaseController
     @ResponseBody
     public AjaxResult addSave(BotPromote botPromote)
     {
-        redisCacheService.botPromote(botPromote);
-        return toAjax(botPromoteService.insertBotPromote(botPromote));
+        if (Boolean.FALSE.equals(redisTemplate.hasKey("promote:"+botPromote.getCommand()))) {
+            redisCacheService.botPromote(botPromote);
+            return toAjax(botPromoteService.insertBotPromote(botPromote));
+        }
+        return toAjax(0);
     }
 
     /**
