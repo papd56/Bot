@@ -4,7 +4,7 @@ import java.util.Locale;
 
 /**
  * 通用常量信息
- * 
+ *
  * @author ruoyi
  */
 public class Constants
@@ -13,6 +13,15 @@ public class Constants
      * UTF-8 字符集
      */
     public static final String UTF8 = "UTF-8";
+
+    /**
+     * 报备
+     */
+    public static final String BAOBEI = "报备";
+    /**
+     * 订单
+     */
+    public static final String ORDER = "订单";
 
     /**
      * GBK 字符集

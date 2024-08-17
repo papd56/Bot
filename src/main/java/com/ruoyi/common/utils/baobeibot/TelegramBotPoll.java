@@ -1,7 +1,9 @@
 package com.ruoyi.common.utils.baobeibot;
 
 import com.ruoyi.common.constant.ChatType;
+import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.bot.SendUtils;
+import com.ruoyi.project.order.service.impl.KeyboardMarkUpImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -124,32 +126,23 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
     private void sendButtonsMessage(Long chatId) {
         SendMessage message = new SendMessage();
         message.setChatId(chatId);
-        message.setText("请选择一个选项：");
-
         // 创建一个 ReplyKeyboardMarkup 对象，用于设置按钮
-        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
-        replyKeyboardMarkup.setSelective(true);
-        replyKeyboardMarkup.setResizeKeyboard(true);  // 自动调整大小
-        replyKeyboardMarkup.setOneTimeKeyboard(true);  // 点击后隐藏键盘
-
-        // 创建键盘按钮行
-        List<KeyboardRow> keyboard = new ArrayList<>();
 
         // 第一行按钮
-        KeyboardRow keyboardFirstRow = new KeyboardRow();
-        keyboardFirstRow.add(new KeyboardButton("7526"));
-        keyboardFirstRow.add(new KeyboardButton("确认"));
-        keyboardFirstRow.add(new KeyboardButton("取消"));
+        KeyboardRow keyboardRow3 = new KeyboardRow();
+        List<String> listButtonNameRow3 = new ArrayList<>();
+        listButtonNameRow3.add(Constants.BAOBEI);
+        listButtonNameRow3.add(Constants.ORDER);
+        keyboardRow3.addAll(listButtonNameRow3);
 
-        // 将行添加到键盘
-        keyboard.add(keyboardFirstRow);
+        List<KeyboardRow> rowList = new ArrayList<>();
+        rowList.add(keyboardRow3);
 
-        // 将键盘设置到 ReplyKeyboardMarkup 对象
-        replyKeyboardMarkup.setKeyboard(keyboard);
+        KeyboardMarkUpImpl keyboardMarkup = new KeyboardMarkUpImpl();
+        ReplyKeyboardMarkup replyKeyboardMarkup = keyboardMarkup.getReplyKeyboardMarkup(rowList);
 
         // 将 ReplyKeyboardMarkup 设置到消息中
         message.setReplyMarkup(replyKeyboardMarkup);
-
         try {
             execute(message);
         } catch (TelegramApiException e) {
