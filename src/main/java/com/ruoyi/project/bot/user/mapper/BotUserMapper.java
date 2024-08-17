@@ -1,7 +1,8 @@
 package com.ruoyi.project.bot.user.mapper;
 
-import java.util.List;
 import com.ruoyi.project.bot.user.domain.BotUser;
+
+import java.util.List;
 
 /**
  * 用户管理Mapper接口
@@ -34,6 +35,14 @@ public interface BotUserMapper
      * @return 结果
      */
     public int insertBotUser(BotUser botUser);
+
+    /**
+     * 新增批量用户
+     *
+     * @param botUsers 批量用户
+     * @return 结果
+     */
+    public int insertBotUsers(List<BotUser> botUsers);
 
     /**
      * 修改用户管理

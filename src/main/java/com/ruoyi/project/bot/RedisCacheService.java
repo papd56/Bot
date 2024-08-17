@@ -2,26 +2,65 @@ package com.ruoyi.project.bot;
 
 import com.ruoyi.project.bot.promote.domain.BotPromote;
 import com.ruoyi.project.bot.user.domain.BotUser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 @Service
 public class RedisCacheService {
+    private static final Logger log = LoggerFactory.getLogger(RedisCacheService.class);
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
 
+    public String getWithRetry(String key) {
+        int retryCount = 0;
+        while (retryCount < 3) {
+            try {
+                return (String) redisTemplate.opsForValue().get(key);
+            } catch (Exception e) {
+                log.error("setWithRetry Exception:",e);
+                retryCount++;
+                try {
+                    Thread.sleep(1000); // 每次重试间隔1秒
+                } catch (InterruptedException ex) {
+                    log.error("setWithRetry InterruptedException:",ex);
+                }
+            }
+        }
+        return null;
+    }
+
+    public void setWithRetry(String key, Object value) {
+        int retryCount = 0;
+        while (retryCount < 3) {
+            try {
+                redisTemplate.opsForValue().set(key, value.toString());
+                return;
+            } catch (Exception e) {
+                log.error("setWithRetry Exception:",e);
+                retryCount++;
+                try {
+                    Thread.sleep(1000); // 每次重试间隔1秒
+                } catch (InterruptedException ex) {
+                    log.error("setWithRetry InterruptedException:",ex);
+                }
+            }
+        }
+    }
+
     public void botUser(BotUser botUser) {
-        redisTemplate.opsForValue().set("user:"+botUser.getUserName(), botUser);
+        setWithRetry("user:"+botUser.getUserName(), botUser);
         if ("1".equals(botUser.getStatus())) {
-            redisTemplate.opsForValue().set("admin:"+botUser.getUserId(), botUser);
+            setWithRetry("admin:"+botUser.getUserId(), botUser);
         }
     }
 
     public void botPromote(BotPromote botPromote) {
         if ("1".equals(botPromote.getStatus())) {
-            redisTemplate.opsForValue().set("promote:"+botPromote.getCommand(), botPromote);
+            setWithRetry("promote:"+botPromote.getCommand(), botPromote);
         }
     }
 }

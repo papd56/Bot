@@ -1,7 +1,7 @@
 package com.ruoyi.project.bot.promote.domain;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ruoyi.framework.aspectj.lang.annotation.Excel;
 import com.ruoyi.framework.web.domain.BaseEntity;
 
@@ -86,12 +86,12 @@ public class BotPromote extends BaseEntity
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("id", getId())
-            .append("title", getTitle())
-            .append("command", getCommand())
-            .append("content", getContent())
-            .append("status", getStatus())
-            .toString();
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            // 将当前对象转换为JSON字符串
+            return objectMapper.writeValueAsString(this);
+        } catch (JsonProcessingException e) {
+            return super.toString(); // 如果JSON转换失败，返回父类的toString()
+        }
     }
 }

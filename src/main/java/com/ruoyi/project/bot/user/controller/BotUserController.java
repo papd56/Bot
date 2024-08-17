@@ -12,6 +12,7 @@ import com.ruoyi.project.bot.user.domain.BotUser;
 import com.ruoyi.project.bot.user.service.IBotUserService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
@@ -36,6 +37,9 @@ public class BotUserController extends BaseController
 
     @Autowired
     private RedisCacheService redisCacheService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @RequiresPermissions("bot:user:view")
     @GetMapping()
@@ -116,6 +120,22 @@ public class BotUserController extends BaseController
     {
         redisCacheService.botUser(botUser);
         return botUserService.insertBotUser(botUser);
+    }
+
+    /**
+     * 新增用户
+     */
+    @Anonymous
+    @PostMapping("/addUsers")
+    @ResponseBody
+    public void addUser(@RequestBody List<BotUser> botUsers)
+    {
+        botUsers.forEach(botUser -> {
+            if (Boolean.FALSE.equals(redisTemplate.hasKey(botUser.getUserName()))) {
+                redisCacheService.botUser(botUser);
+                botUserService.insertBotUser(botUser);
+            }
+        });
     }
 
     /**

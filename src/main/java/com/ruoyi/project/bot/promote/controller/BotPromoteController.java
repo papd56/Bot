@@ -58,7 +58,7 @@ public class BotPromoteController extends BaseController
     }
 
     /**
-     * 查询推广指令列表
+     * 查询推广指令列表并缓存
      */
     @Anonymous
     @PostMapping("/promoteList")

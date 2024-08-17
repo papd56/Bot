@@ -1,12 +1,13 @@
 package com.ruoyi.project.bot.user.service.impl;
 
-import java.util.List;
+import com.ruoyi.common.utils.text.Convert;
+import com.ruoyi.project.bot.user.domain.BotUser;
+import com.ruoyi.project.bot.user.mapper.BotUserMapper;
+import com.ruoyi.project.bot.user.service.IBotUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.project.bot.user.mapper.BotUserMapper;
-import com.ruoyi.project.bot.user.domain.BotUser;
-import com.ruoyi.project.bot.user.service.IBotUserService;
-import com.ruoyi.common.utils.text.Convert;
+
+import java.util.List;
 
 /**
  * 用户管理Service业务层处理
@@ -54,6 +55,18 @@ public class BotUserServiceImpl implements IBotUserService
     public int insertBotUser(BotUser botUser)
     {
         return botUserMapper.insertBotUser(botUser);
+    }
+
+    /**
+     * 新增批量用户
+     *
+     * @param botUsers 批量用户
+     * @return 结果
+     */
+    @Override
+    public int insertBotUsers(List<BotUser> botUsers)
+    {
+        return botUserMapper.insertBotUsers(botUsers);
     }
 
     /**
