@@ -28,8 +28,7 @@ import com.ruoyi.framework.web.page.TableDataInfo;
  */
 @Controller
 @RequestMapping("/baobeibot/group")
-public class BotGroupListController extends BaseController
-{
+public class BotGroupListController extends BaseController {
     private String prefix = "baobeibot/group";
 
     @Autowired
@@ -37,8 +36,7 @@ public class BotGroupListController extends BaseController
 
     @RequiresPermissions("baobeibot:group:view")
     @GetMapping()
-    public String group()
-    {
+    public String group() {
         return prefix + "/group";
     }
 
@@ -48,8 +46,7 @@ public class BotGroupListController extends BaseController
     @RequiresPermissions("baobeibot:group:list")
     @PostMapping("/list")
     @ResponseBody
-    public TableDataInfo list(BotGroupList botGroupList)
-    {
+    public TableDataInfo list(BotGroupList botGroupList) {
         startPage();
         List<BotGroupList> list = botGroupListService.selectBotGroupListList(botGroupList);
         return getDataTable(list);
@@ -62,8 +59,7 @@ public class BotGroupListController extends BaseController
     @Log(title = "群组列", businessType = BusinessType.EXPORT)
     @PostMapping("/export")
     @ResponseBody
-    public AjaxResult export(BotGroupList botGroupList)
-    {
+    public AjaxResult export(BotGroupList botGroupList) {
         List<BotGroupList> list = botGroupListService.selectBotGroupListList(botGroupList);
         ExcelUtil<BotGroupList> util = new ExcelUtil<BotGroupList>(BotGroupList.class);
         return util.exportExcel(list, "群组列数据");
@@ -73,20 +69,18 @@ public class BotGroupListController extends BaseController
      * 新增群组列
      */
     @GetMapping("/add")
-    public String add()
-    {
+    public String add() {
         return prefix + "/add";
     }
 
     /**
      * 新增保存群组列
      */
-    @RequiresPermissions("baobeibot:group:add")
+//    @RequiresPermissions("baobeibot:group:add")
     @Log(title = "群组列", businessType = BusinessType.INSERT)
     @PostMapping("/add")
     @ResponseBody
-    public AjaxResult addSave(BotGroupList botGroupList)
-    {
+    public AjaxResult addSave(BotGroupList botGroupList) {
         return toAjax(botGroupListService.insertBotGroupList(botGroupList));
     }
 
@@ -95,8 +89,7 @@ public class BotGroupListController extends BaseController
      */
     @RequiresPermissions("baobeibot:group:edit")
     @GetMapping("/edit/{id}")
-    public String edit(@PathVariable("id") Long id, ModelMap mmap)
-    {
+    public String edit(@PathVariable("id") Long id, ModelMap mmap) {
         BotGroupList botGroupList = botGroupListService.selectBotGroupListById(id);
         mmap.put("botGroupList", botGroupList);
         return prefix + "/edit";
@@ -109,8 +102,7 @@ public class BotGroupListController extends BaseController
     @Log(title = "群组列", businessType = BusinessType.UPDATE)
     @PostMapping("/edit")
     @ResponseBody
-    public AjaxResult editSave(BotGroupList botGroupList)
-    {
+    public AjaxResult editSave(BotGroupList botGroupList) {
         return toAjax(botGroupListService.updateBotGroupList(botGroupList));
     }
 
@@ -119,10 +111,9 @@ public class BotGroupListController extends BaseController
      */
     @RequiresPermissions("baobeibot:group:remove")
     @Log(title = "群组列", businessType = BusinessType.DELETE)
-    @PostMapping( "/remove")
+    @PostMapping("/remove")
     @ResponseBody
-    public AjaxResult remove(String ids)
-    {
+    public AjaxResult remove(String ids) {
         return toAjax(botGroupListService.deleteBotGroupListByIds(ids));
     }
 }

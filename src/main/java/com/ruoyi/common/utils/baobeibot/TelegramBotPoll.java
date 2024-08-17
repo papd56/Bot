@@ -2,34 +2,35 @@ package com.ruoyi.common.utils.baobeibot;
 
 import com.ruoyi.common.constant.ChatType;
 import com.ruoyi.common.utils.bot.SendUtils;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.bots.TelegramWebhookBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
-import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.BotOptions;
-import org.telegram.telegrambots.meta.generics.BotSession;
-import org.telegram.telegrambots.meta.generics.LongPollingBot;
-import org.telegram.telegrambots.meta.generics.TelegramBot;
+import org.telegram.telegrambots.meta.generics.*;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 
-import static com.ruoyi.common.utils.bot.SendUtils.sendMessageInit;
-import static net.sf.jsqlparser.parser.feature.Feature.execute;
 
 @Log4j2
 @Component
 public class TelegramBotPoll extends TelegramLongPollingBot {
 
+    @Autowired
+    private YourTelegramBot yourTelegramBot;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -37,13 +38,13 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             @Override
             public String getBotUsername() {
                 // 替换为你的 Bot 的用户名
-                return "@qunbaobei8bot";
+                return "@hawkins8897bot";
             }
 
             @Override
             public String getBotToken() {
                 // 替换为你的 Bot 的 Token
-                return "7237081474:AAGsSnjPvvr1RLOgdrQjA9XNl-JrV0bQ-5o";
+                return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
             }
         };
         String botToken = telegramBot.getBotToken();
@@ -54,6 +55,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             String chatTitle = chat.getTitle();
             String chatType = chat.getType().toString();
             Boolean hasHiddenMembers = chat.getHasHiddenMembers();
+            boolean groupMessage = update.getMessage().isGroupMessage();
 
 
             if (chat.getType().equalsIgnoreCase(ChatType.GROUP)) {
@@ -107,6 +109,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "几个固话/手机口：1\n" +
                             "地区:河北\n" +
                             "客户结算完整地址：TQp15c1K7MEgNAFNLvwRSSx4JgCpfUdJ5D"));
+                    this.sendButtonsMessage(-1002228392062L);
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
 
@@ -117,16 +120,53 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         }
     }
 
+    // 发送带按钮的消息
+    private void sendButtonsMessage(Long chatId) {
+        SendMessage message = new SendMessage();
+        message.setChatId(chatId);
+        message.setText("请选择一个选项：");
+
+        // 创建一个 ReplyKeyboardMarkup 对象，用于设置按钮
+        ReplyKeyboardMarkup replyKeyboardMarkup = new ReplyKeyboardMarkup();
+        replyKeyboardMarkup.setSelective(true);
+        replyKeyboardMarkup.setResizeKeyboard(true);  // 自动调整大小
+        replyKeyboardMarkup.setOneTimeKeyboard(true);  // 点击后隐藏键盘
+
+        // 创建键盘按钮行
+        List<KeyboardRow> keyboard = new ArrayList<>();
+
+        // 第一行按钮
+        KeyboardRow keyboardFirstRow = new KeyboardRow();
+        keyboardFirstRow.add(new KeyboardButton("7526"));
+        keyboardFirstRow.add(new KeyboardButton("确认"));
+        keyboardFirstRow.add(new KeyboardButton("取消"));
+
+        // 将行添加到键盘
+        keyboard.add(keyboardFirstRow);
+
+        // 将键盘设置到 ReplyKeyboardMarkup 对象
+        replyKeyboardMarkup.setKeyboard(keyboard);
+
+        // 将 ReplyKeyboardMarkup 设置到消息中
+        message.setReplyMarkup(replyKeyboardMarkup);
+
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            log.info("发送按钮信息异常：{}", e.getMessage());
+        }
+    }
+
     @Override
     public String getBotUsername() {
         // 替换为你的 Bot 的用户名
-        return "@qunbaobei8bot";
+        return "@hawkins8897bot";
     }
 
     @Override
     public String getBotToken() {
         // 替换为你的 Bot 的 Token
-        return "7128410523:AAHVSQHAPXitivGxOqdr1StJaI7vY5zzvDY";
+        return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
     }
 
     // 转发消息的函数
@@ -149,11 +189,103 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         try {
             DefaultBotSession botSession = new DefaultBotSession();
             TelegramBotPoll telegramBotPoll = new TelegramBotPoll();
+            TelegramWebhookBot telegramWebhookBot = new TelegramWebhookBot() {
+                @Override
+                public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
+                    return null;
+                }
+
+                @Override
+                public String getBotPath() {
+                    return "";
+                }
+
+                @Override
+                public String getBotUsername() {
+                    return "";
+                }
+            };
             botSession.setToken(telegramBotPoll.getBotToken());
             TelegramBotsApi botsApi = new TelegramBotsApi(botSession.getClass());
             botsApi.registerBot(telegramBotPoll);
+            WebhookBot webhookBot = new WebhookBot() {
+                @Override
+                public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
+                    return null;
+                }
+
+                @Override
+                public void setWebhook(SetWebhook setWebhook) throws TelegramApiException {
+
+                }
+
+                @Override
+                public String getBotPath() {
+                    return "";
+                }
+
+                @Override
+                public String getBotUsername() {
+                    return "";
+                }
+
+                @Override
+                public String getBotToken() {
+                    return "";
+                }
+            };
+            SetWebhook setWebhook = new SetWebhook();
+            setWebhook.setUrl("https://api.telegram.org/bot<7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI>/setWebhook?url=https://acbot.top/webhook");
+            setWebhook.setSecretToken("7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI");
+            botsApi.registerBot(webhookBot, setWebhook);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
     }
+
+
+//    public static void main(String[] args) {
+//        try {
+//            String url = "https://api.telegram.org/bot<7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI>/setWebhook?url=https://acbot.top/webhook";
+//            DefaultBotSession botSession = new DefaultBotSession();
+//
+//            TelegramBotPoll telegramBotPoll = new TelegramBotPoll();
+//            botSession.setToken(telegramBotPoll.getBotToken());
+//
+//            TelegramBotsApi botsApi = new TelegramBotsApi(botSession.getClass());
+//            SetWebhook setWebhook = new SetWebhook();
+//            setWebhook.setUrl(url);
+//            setWebhook.setSecretToken("7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI");
+//            WebhookBot webhookBot = new WebhookBot() {
+//                @Override
+//                public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
+//                    return null;
+//                }
+//
+//                @Override
+//                public void setWebhook(SetWebhook setWebhook) throws TelegramApiException {
+//                    setWebhook.setUrl(url);
+//                }
+//
+//                @Override
+//                public String getBotPath() {
+//                    return "";
+//                }
+//
+//                @Override
+//                public String getBotUsername() {
+//                    return "@hawkins8897bot";
+//                }
+//
+//                @Override
+//                public String getBotToken() {
+//                    return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
+//                }
+//            };
+//            botsApi.registerBot(webhookBot, setWebhook);
+//            botsApi.registerBot(telegramBotPoll);
+//        } catch (TelegramApiException e) {
+//            e.printStackTrace();
+//        }
+//    }
 }

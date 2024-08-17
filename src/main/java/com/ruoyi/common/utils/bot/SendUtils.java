@@ -1,6 +1,5 @@
 package com.ruoyi.common.utils.bot;
 
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 
