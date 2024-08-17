@@ -91,7 +91,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
 //                forwardMessage(messageText, chatId);
 
                 if (messageText.equals("./start")) {
-                    execute(SendUtils.sendMessageInit(chatId, "欢迎使用"));
+                    execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
                 }
                 // 处理用户消息
                 if ("报备".equals(messageText)) {
