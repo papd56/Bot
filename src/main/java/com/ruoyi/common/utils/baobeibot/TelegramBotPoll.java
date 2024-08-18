@@ -44,12 +44,12 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
             }
         };
-
         // 如果是按钮点击事件，处理回调数据
         if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
             String text = update.getCallbackQuery().getMessage().getText();
+            Integer messageId = update.getCallbackQuery().getMessage().getMessageId();
             switch (callbackData) {
                 case "button1":
                     break;
@@ -59,7 +59,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             }
             // 创建一个带有按钮的键盘
             try {
-                InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate();
+                InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate(messageId);
                 execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
             } catch (TelegramApiException e) {
                 log.info("信息回调成功：{}", e.getMessage());
@@ -122,55 +122,9 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         try {
             DefaultBotSession botSession = new DefaultBotSession();
             TelegramBotPoll telegramBotPoll = new TelegramBotPoll();
-            TelegramWebhookBot telegramWebhookBot = new TelegramWebhookBot() {
-                @Override
-                public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-                    return null;
-                }
-
-                @Override
-                public String getBotPath() {
-                    return "";
-                }
-
-                @Override
-                public String getBotUsername() {
-                    return "";
-                }
-            };
             botSession.setToken(telegramBotPoll.getBotToken());
             TelegramBotsApi botsApi = new TelegramBotsApi(botSession.getClass());
             botsApi.registerBot(telegramBotPoll);
-            WebhookBot webhookBot = new WebhookBot() {
-                @Override
-                public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-                    return null;
-                }
-
-                @Override
-                public void setWebhook(SetWebhook setWebhook) throws TelegramApiException {
-
-                }
-
-                @Override
-                public String getBotPath() {
-                    return "";
-                }
-
-                @Override
-                public String getBotUsername() {
-                    return "";
-                }
-
-                @Override
-                public String getBotToken() {
-                    return "";
-                }
-            };
-            SetWebhook setWebhook = new SetWebhook();
-            setWebhook.setUrl("https://api.telegram.org/bot<7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI>/setWebhook?url=https://acbot.top/webhook");
-            setWebhook.setSecretToken("7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI");
-            botsApi.registerBot(webhookBot, setWebhook);
         } catch (TelegramApiException e) {
             e.printStackTrace();
         }
@@ -195,12 +149,12 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
     }
 
 
-    private InlineKeyboardMarkup caleTemplate() {
+    private InlineKeyboardMarkup caleTemplate(Integer messageId) {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("7421");
+        button1.setText(String.valueOf(messageId));
         button1.setCallbackData("button1");
         button1.setUrl("https://t.me/dbcksq");
         row.add(button1);
