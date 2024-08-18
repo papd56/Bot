@@ -6,12 +6,9 @@ import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.order.domain.BotOrderList;
 import com.ruoyi.project.order.mapper.BotOrderListMapper;
-import com.ruoyi.project.order.service.IBotOrderListService;
-import com.ruoyi.project.order.service.impl.BotOrderListServiceImpl;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
@@ -19,9 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.meta.generics.TelegramBot;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -30,21 +25,11 @@ import java.util.List;
 @Component
 public class TelegramBotPoll extends TelegramLongPollingBot {
 
+    @Autowired
+    private BotOrderListMapper botOrderListMapper;
+
     @Override
     public void onUpdateReceived(Update update) {
-        TelegramBot telegramBot = new TelegramBot() {
-            @Override
-            public String getBotUsername() {
-                // 替换为你的 Bot 的用户名
-                return "@hawkins8897bot";
-            }
-
-            @Override
-            public String getBotToken() {
-                // 替换为你的 Bot 的 Token
-                return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
-            }
-        };
         BotOrderList botOrderList = new BotOrderList();
         // 如果是按钮点击事件，处理回调数据
         if (update.hasCallbackQuery()) {
@@ -118,6 +103,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CONFIRMED.getCode());
         //创建报备订单
+        this.botOrderListMapper.insert(botOrderList);
     }
 
     private void updateOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
@@ -128,6 +114,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         botOrderList.setOrderStatus(OrderStatus.CANCELED.getCode());
         botOrderList.setUpdateTime(new Date());
         //创建报备订单
+        this.botOrderListMapper.updateById(botOrderList);
     }
 
     @Override
