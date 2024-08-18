@@ -4,7 +4,6 @@ import com.ruoyi.common.constant.ChatType;
 import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.order.service.impl.KeyboardMarkUpImpl;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,8 +15,9 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.*;
@@ -49,7 +49,36 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
             }
         };
-        String botToken = telegramBot.getBotToken();
+
+        // 如果是按钮点击事件，处理回调数据
+        if (update.hasCallbackQuery()) {
+            String callbackData = update.getCallbackQuery().getData();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            String remark = "";
+            switch (callbackData) {
+                case "button1":
+                    break;
+                case "button2":
+                    remark = "交易方对接人：@*****\n" +
+                            "交易金额：120u\n" +
+                            "结算汇率：\n" +
+                            "结算手续费2U谁出：公群方（客户/公群方）\n" +
+                            "订单完成时间：1天\n" +
+                            "几个固话/手机口：1\n" +
+                            "地区:河北\n" +
+                            "客户结算完整地址：TQp15c1K7MEgNAFNLvwRSSx4JgCpfUdJ5D";
+                    break;
+                default:
+            }
+            // 创建一个带有按钮的键盘
+            try {
+                InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate();
+                execute(SendUtils.sendMessageInit2(chatId, remark, inlineKeyboardMarkup));
+            } catch (TelegramApiException e) {
+                log.info("信息回调成功：{}", e.getMessage());
+            }
+            return;
+        }
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
@@ -58,8 +87,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             String chatType = chat.getType().toString();
             Boolean hasHiddenMembers = chat.getHasHiddenMembers();
             boolean groupMessage = update.getMessage().isGroupMessage();
-
-
             if (chat.getType().equalsIgnoreCase(ChatType.GROUP)) {
                 // 处理群组
             } else if (chat.getType().equals(ChatType.PRIVATE)) {
@@ -68,28 +95,9 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             } else if (chat.getType().equalsIgnoreCase(ChatType.CHANNEL)) {
                 // 处理频道
             }
-            //获取群组成员列表
-//            GetChatMember getChatMembers = new GetChatMember();
-//            getChatMembers.setChatId(chatId);
-//            try {
-//                String status = execute(getChatMembers).getStatus();
-//                System.out.println(status);
-//            } catch (TelegramApiException e) {
-//                log.info("获取群组成员列表失败：{}", e.getMessage());
-//            }
-
-//            User user = update.getMessage().getFrom();
-//
-//            // 获取用户信息
-//            String firstName = user.getFirstName();
-//            String lastName = user.getLastName();
-//            String username = user.getUserName();
-
-            // 发送回复消息
+            // 创建一个带有按钮的键盘
+            InlineKeyboardMarkup markup = createKeyboard();
             try {
-                // 这里是消息接收到后的处理逻辑，比如转发到另一个群
-//                forwardMessage(messageText, chatId);
-
                 if (messageText.equals("./start")) {
                     execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
                 }
@@ -110,8 +118,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "订单完成时间：1天\n" +
                             "几个固话/手机口：1\n" +
                             "地区:河北\n" +
-                            "客户结算完整地址：TQp15c1K7MEgNAFNLvwRSSx4JgCpfUdJ5D"));
-                    this.sendButtonsMessage(-1002228392062L);
+                            "客户结算完整地址：TQp15c1K7MEgNAFNLvwRSSx4JgCpfUdJ5D", markup));
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
 
@@ -236,49 +243,42 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         }
     }
 
+    private InlineKeyboardMarkup createKeyboard() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("7421");
+        button1.setCallbackData("button1");
+        button1.setUrl("https://t.me/dbcksq");
+        row.add(button1);
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText("取消");
+        button2.setCallbackData("button2");
+        row.add(button2);
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
 
-//    public static void main(String[] args) {
-//        try {
-//            String url = "https://api.telegram.org/bot<7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI>/setWebhook?url=https://acbot.top/webhook";
-//            DefaultBotSession botSession = new DefaultBotSession();
-//
-//            TelegramBotPoll telegramBotPoll = new TelegramBotPoll();
-//            botSession.setToken(telegramBotPoll.getBotToken());
-//
-//            TelegramBotsApi botsApi = new TelegramBotsApi(botSession.getClass());
-//            SetWebhook setWebhook = new SetWebhook();
-//            setWebhook.setUrl(url);
-//            setWebhook.setSecretToken("7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI");
-//            WebhookBot webhookBot = new WebhookBot() {
-//                @Override
-//                public BotApiMethod<?> onWebhookUpdateReceived(Update update) {
-//                    return null;
-//                }
-//
-//                @Override
-//                public void setWebhook(SetWebhook setWebhook) throws TelegramApiException {
-//                    setWebhook.setUrl(url);
-//                }
-//
-//                @Override
-//                public String getBotPath() {
-//                    return "";
-//                }
-//
-//                @Override
-//                public String getBotUsername() {
-//                    return "@hawkins8897bot";
-//                }
-//
-//                @Override
-//                public String getBotToken() {
-//                    return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
-//                }
-//            };
-//            botsApi.registerBot(webhookBot, setWebhook);
-//            botsApi.registerBot(telegramBotPoll);
-//        } catch (TelegramApiException e) {
-//            e.printStackTrace();
-//        }
-//    }
+
+    private InlineKeyboardMarkup caleTemplate() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("7421");
+        button1.setCallbackData("button1");
+        button1.setUrl("https://t.me/dbcksq");
+        row.add(button1);
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        button2.setText("已取消");
+        button2.setCallbackData("button2");
+        row.add(button2);
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+
 }

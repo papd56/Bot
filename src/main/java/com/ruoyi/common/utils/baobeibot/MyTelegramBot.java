@@ -67,12 +67,12 @@ public class MyTelegramBot extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("公群导航");
+        button1.setText("7426");
         button1.setCallbackData("button1");
         button1.setUrl("https://t.me/dbcksq");
         row.add(button1);
         InlineKeyboardButton button2 = new InlineKeyboardButton();
-        button2.setText("点击跳转完整账单");
+        button2.setText("取消");
         button2.setCallbackData("button2");
         row.add(button2);
         rows.add(row);
