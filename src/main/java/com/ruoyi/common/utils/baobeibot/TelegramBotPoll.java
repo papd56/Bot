@@ -54,26 +54,18 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         if (update.hasCallbackQuery()) {
             String callbackData = update.getCallbackQuery().getData();
             long chatId = update.getCallbackQuery().getMessage().getChatId();
-            String remark = "";
+            String text = update.getCallbackQuery().getMessage().getText();
             switch (callbackData) {
                 case "button1":
                     break;
                 case "button2":
-                    remark = "交易方对接人：@*****\n" +
-                            "交易金额：120u\n" +
-                            "结算汇率：\n" +
-                            "结算手续费2U谁出：公群方（客户/公群方）\n" +
-                            "订单完成时间：1天\n" +
-                            "几个固话/手机口：1\n" +
-                            "地区:河北\n" +
-                            "客户结算完整地址：TQp15c1K7MEgNAFNLvwRSSx4JgCpfUdJ5D";
                     break;
                 default:
             }
             // 创建一个带有按钮的键盘
             try {
                 InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate();
-                execute(SendUtils.sendMessageInit2(chatId, remark, inlineKeyboardMarkup));
+                execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
             } catch (TelegramApiException e) {
                 log.info("信息回调成功：{}", e.getMessage());
             }
@@ -111,14 +103,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "订单完成时间：1天");
                     execute(sendMessage);
                 } else if (messageText.contains("地区") || messageText.contains("地址")) {
-                    execute(SendUtils.sendMessageInit(-1002228392062L, "交易方对接人：@*****\n" +
-                            "交易金额：120u\n" +
-                            "结算汇率：\n" +
-                            "结算手续费2U谁出：公群方（客户/公群方）\n" +
-                            "订单完成时间：1天\n" +
-                            "几个固话/手机口：1\n" +
-                            "地区:河北\n" +
-                            "客户结算完整地址：TQp15c1K7MEgNAFNLvwRSSx4JgCpfUdJ5D", markup));
+                    execute(SendUtils.sendMessageInit(-1002228392062L, messageText, markup));
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
 
