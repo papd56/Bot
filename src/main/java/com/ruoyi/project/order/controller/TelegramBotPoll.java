@@ -5,9 +5,7 @@ import com.ruoyi.common.utils.DateTimeUtil;
 import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.order.domain.BotOrderList;
-import com.ruoyi.project.order.mapper.BotOrderListMapper;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -25,8 +23,6 @@ import java.util.List;
 @Component
 public class TelegramBotPoll extends TelegramLongPollingBot {
 
-    @Autowired
-    private BotOrderListMapper botOrderListMapper;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -103,7 +99,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CONFIRMED.getCode());
         //创建报备订单
-        this.botOrderListMapper.insert(botOrderList);
     }
 
     private void updateOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
@@ -114,7 +109,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         botOrderList.setOrderStatus(OrderStatus.CANCELED.getCode());
         botOrderList.setUpdateTime(new Date());
         //创建报备订单
-        this.botOrderListMapper.updateById(botOrderList);
     }
 
     @Override
