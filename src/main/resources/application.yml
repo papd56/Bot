@@ -34,8 +34,11 @@ server:
 # 日志配置
 logging:
   level:
-    com.ruoyi: debug
-    org.springframework: warn
+    org:
+      hibernate:
+        type:
+          descriptor:
+            sql: trace
 
 # 用户配置
 user:

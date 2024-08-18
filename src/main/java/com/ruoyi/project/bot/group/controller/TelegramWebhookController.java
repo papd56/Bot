@@ -1,6 +1,5 @@
 package com.ruoyi.project.bot.group.controller;
 
-import com.ruoyi.common.utils.baobeibot.YourTelegramBot;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -18,7 +17,6 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 public class TelegramWebhookController {
-    private final YourTelegramBot yourTelegramBot;
 
     @PostMapping("/webhook")
     public void onUpdateReceived(@RequestBody Update update) {
@@ -61,12 +59,5 @@ public class TelegramWebhookController {
 
         // 将 ReplyKeyboardMarkup 设置到消息中
         message.setReplyMarkup(replyKeyboardMarkup);
-
-        try {
-            // 发送消息
-            yourTelegramBot.execute(message);
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
     }
 }

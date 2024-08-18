@@ -1,5 +1,6 @@
 package com.ruoyi.project.order.domain;
 
+import nonapi.io.github.classgraph.json.Id;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import com.ruoyi.framework.aspectj.lang.annotation.Excel;
@@ -16,6 +17,7 @@ public class BotOrderList extends BaseEntity
     private static final long serialVersionUID = 1L;
 
     /** 主键id */
+    @Id
     private Long id;
 
     /** 交易用户 */
@@ -36,7 +38,7 @@ public class BotOrderList extends BaseEntity
 
     /** 订单状态：1 待确认 2 订单取消  3订单完成 */
     @Excel(name = "订单状态：1 待确认 2 订单取消  3订单完成")
-    private Long orderStatus;
+    private Integer orderStatus;
 
     public void setId(Long id)
     {
@@ -88,12 +90,12 @@ public class BotOrderList extends BaseEntity
         return tradeTime;
     }
 
-    public void setOrderStatus(Long orderStatus)
+    public void setOrderStatus(Integer orderStatus)
     {
         this.orderStatus = orderStatus;
     }
 
-    public Long getOrderStatus()
+    public Integer getOrderStatus()
     {
         return orderStatus;
     }

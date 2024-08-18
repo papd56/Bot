@@ -1,6 +1,6 @@
 package com.ruoyi;
 
-import com.ruoyi.common.utils.baobeibot.TelegramBotPoll;
+import com.ruoyi.project.order.controller.TelegramBotPoll;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
