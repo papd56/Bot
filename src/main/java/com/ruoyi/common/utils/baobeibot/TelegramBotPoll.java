@@ -73,12 +73,9 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         }
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
+            Integer messageId = update.getMessage().getMessageId();
             long chatId = update.getMessage().getChatId();
             Chat chat = update.getMessage().getChat();
-            String chatTitle = chat.getTitle();
-            String chatType = chat.getType().toString();
-            Boolean hasHiddenMembers = chat.getHasHiddenMembers();
-            boolean groupMessage = update.getMessage().isGroupMessage();
             if (chat.getType().equalsIgnoreCase(ChatType.GROUP)) {
                 // 处理群组
             } else if (chat.getType().equals(ChatType.PRIVATE)) {
@@ -88,7 +85,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 // 处理频道
             }
             // 创建一个带有按钮的键盘
-            InlineKeyboardMarkup markup = createKeyboard();
+            InlineKeyboardMarkup markup = createKeyboard(messageId);
             try {
                 if (messageText.equals("./start")) {
                     execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
@@ -111,34 +108,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             } catch (TelegramApiException e) {
                 log.info("机器人消息发送异常: {}", e.getMessage());
             }
-        }
-    }
-
-    // 发送带按钮的消息
-    private void sendButtonsMessage(Long chatId) {
-        SendMessage message = new SendMessage();
-        message.setChatId(chatId);
-        // 创建一个 ReplyKeyboardMarkup 对象，用于设置按钮
-
-        // 第一行按钮
-        KeyboardRow keyboardRow3 = new KeyboardRow();
-        List<String> listButtonNameRow3 = new ArrayList<>();
-        listButtonNameRow3.add(Constants.BAOBEI);
-        listButtonNameRow3.add(Constants.ORDER);
-        keyboardRow3.addAll(listButtonNameRow3);
-
-        List<KeyboardRow> rowList = new ArrayList<>();
-        rowList.add(keyboardRow3);
-
-        KeyboardMarkUpImpl keyboardMarkup = new KeyboardMarkUpImpl();
-        ReplyKeyboardMarkup replyKeyboardMarkup = keyboardMarkup.getReplyKeyboardMarkup(rowList);
-
-        // 将 ReplyKeyboardMarkup 设置到消息中
-        message.setReplyMarkup(replyKeyboardMarkup);
-        try {
-            execute(message);
-        } catch (TelegramApiException e) {
-            log.info("发送按钮信息异常：{}", e.getMessage());
         }
     }
 
@@ -228,12 +197,12 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         }
     }
 
-    private InlineKeyboardMarkup createKeyboard() {
+    private InlineKeyboardMarkup createKeyboard(Integer messageId) {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("7421");
+        button1.setText(String.valueOf(messageId));
         button1.setCallbackData("button1");
         button1.setUrl("https://t.me/dbcksq");
         row.add(button1);
