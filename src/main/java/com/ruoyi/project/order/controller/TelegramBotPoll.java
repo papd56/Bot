@@ -134,9 +134,9 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText(String.valueOf(messageId));
+        button1.setText("确认");
         button1.setCallbackData("button1");
-        button1.setUrl("https://t.me/gqbaobel_bot?start=" + messageId);
+        button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
         row.add(button1);
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         button2.setText("取消");
@@ -155,7 +155,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         button1.setText("确认");
         button1.setCallbackData("button1");
-        button1.setUrl("https://t.me/gqbaobel_bot?start=" + messageId);
+        button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
         row.add(button1);
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         button2.setText("已取消");
