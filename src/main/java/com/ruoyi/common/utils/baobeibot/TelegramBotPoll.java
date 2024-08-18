@@ -1,9 +1,7 @@
 package com.ruoyi.common.utils.baobeibot;
 
 import com.ruoyi.common.constant.ChatType;
-import com.ruoyi.common.constant.Constants;
 import com.ruoyi.common.utils.bot.SendUtils;
-import com.ruoyi.project.order.service.impl.KeyboardMarkUpImpl;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -16,16 +14,13 @@ import org.telegram.telegrambots.meta.api.methods.updates.SetWebhook;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.*;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Log4j2
 @Component
@@ -123,22 +118,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
     }
 
-    // 转发消息的函数
-    private void forwardMessage(String message, Long chatId) {
-        // 目标群组的Chat ID
-        Long targetChatId = -1002228392062L;  // 替换为目标群组的Chat ID
-
-        SendMessage sendMessage = new SendMessage();
-        sendMessage.setChatId(targetChatId.toString());
-        sendMessage.setText(message);
-
-        try {
-            execute(sendMessage);  // 发送消息到目标群
-        } catch (TelegramApiException e) {
-            e.printStackTrace();
-        }
-    }
-
     public static void main(String[] args) {
         try {
             DefaultBotSession botSession = new DefaultBotSession();
@@ -233,6 +212,5 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         markup.setKeyboard(rows);
         return markup;
     }
-
 
 }
