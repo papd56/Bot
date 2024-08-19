@@ -1,6 +1,5 @@
 package com.ruoyi.project.order.controller;
 
-import com.ruoyi.RuoYiApplication;
 import com.ruoyi.common.constant.ChatType;
 import com.ruoyi.common.utils.DateTimeUtil;
 import com.ruoyi.common.utils.bot.SendUtils;
@@ -10,7 +9,6 @@ import com.ruoyi.project.order.service.IBotOrderListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.SpringApplication;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
