@@ -49,22 +49,23 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 default:
             }
             if (callbackData.equalsIgnoreCase("button1")) {
-                InlineKeyboardMarkup inlineKeyboardMarkup = baobeiFinsh(messageId);
+                InlineKeyboardMarkup inlineKeyboardMarkup = orderFinsh(messageId);
                 try {
                     execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
                 } catch (TelegramApiException e) {
                     log.info("报备信息异常: {}", e.getMessage());
                 }
+            } else {
+                try {
+                    InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate(messageId);
+                    execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
+                    //取消订单
+                    updateOrderInfo(update, botOrderList, text);
+                } catch (TelegramApiException e) {
+                    log.info("信息回调成功：{}", e.getMessage());
+                }
+                return;
             }
-            try {
-                InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate(messageId);
-                execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
-                //取消订单
-                updateOrderInfo(update, botOrderList, text);
-            } catch (TelegramApiException e) {
-                log.info("信息回调成功：{}", e.getMessage());
-            }
-            return;
         }
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
@@ -201,6 +202,20 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         button1.setText("报备成功");
+        button1.setCallbackData("button1");
+        row.add(button1);
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    //通知报备群 订单完成
+    private InlineKeyboardMarkup orderFinsh(Integer messageId) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("订单完成");
         button1.setCallbackData("button1");
         row.add(button1);
         rows.add(row);
