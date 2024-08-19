@@ -17,16 +17,12 @@ import com.ruoyi.framework.web.domain.BaseEntity;
  * @author ruoyi
  * @date 2024-08-14
  */
-@Data
-@Builder
 public class BotGroupList extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
     /**
      * 主键id
      */
-    @Id
-    @Generated
     private Long id;
 
     /**

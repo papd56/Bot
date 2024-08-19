@@ -1,14 +1,15 @@
 package com.ruoyi.project.order.controller;
 
-import com.ruoyi.common.constant.ChatType;
 import com.ruoyi.common.utils.bot.SendUtils;
+import com.ruoyi.project.bot.group.service.IBotGroupService;
 import com.ruoyi.project.common.RedisConstantKey;
 import com.ruoyi.project.enu.OrderStatus;
+import com.ruoyi.project.group.domain.BotGroupList;
+import com.ruoyi.project.group.service.IBotGroupListService;
 import com.ruoyi.project.order.domain.BotOrderList;
 import com.ruoyi.project.order.service.IBotOrderListService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.cache.CacheProperties;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -21,13 +22,15 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 @Log4j2
 public class TelegramBotPoll extends TelegramLongPollingBot {
 
     @Autowired
     private IBotOrderListService iBotOrderListService;
+
+    @Autowired
+    private IBotGroupListService iBotGroupListService;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -68,7 +71,22 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 return;
             }
         }
+        //群组id
+        Long chatIds = 0L;
         if (update.hasMessage() && update.getMessage().hasText()) {
+            BotGroupList botGroupList = new BotGroupList();
+            //获取群组id
+            Chat chat = update.getMessage().getChat();
+            if (chat.isUserChat()) {
+                // 处理私聊消息
+            } else if (chat.getType().equalsIgnoreCase("supergroup")) {
+                // 处理群组消息
+                chatIds = chat.getId();
+                // 保存群组 ID 到数据库或其他地方
+                botGroupList.setGroupId(chatIds);
+                botGroupList.setGroupName(chat.getTitle());
+                iBotGroupListService.insertBotGroupList(botGroupList);
+            }
             String messageText = update.getMessage().getText();
             Integer messageId = update.getMessage().getMessageId();
             long chatId = update.getMessage().getChatId();
@@ -86,8 +104,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     throw new RuntimeException(e);
                 }
             }
-            // 创建一个带有按钮的键盘
-            InlineKeyboardMarkup markup = createKeyboard(messageId);
             try {
                 if (messageText.equals("./start")) {
                     execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
@@ -105,6 +121,8 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 } else if (messageText.contains("地区") || messageText.contains("地址")
                         || messageText.contains("交易金额") || messageText.contains("交易方对接人")
                         || messageText.contains("客户结算完整地址")) {
+                    // 创建一个带有按钮的键盘
+                    InlineKeyboardMarkup markup = createKeyboard(messageId);
                     execute(SendUtils.sendMessageInit(-1002228392062L, messageText, markup));
                     String messagTexts = "发送成功，请在公群内查看";
                     //将发送的消息存入到 缓存redis
@@ -118,7 +136,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             }
         }
     }
-
 
     private void insertOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
         botOrderList.setTradeInfo(messagTexts);
