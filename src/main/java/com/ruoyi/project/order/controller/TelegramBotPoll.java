@@ -1,5 +1,6 @@
 package com.ruoyi.project.order.controller;
 
+import com.ruoyi.RuoYiApplication;
 import com.ruoyi.common.constant.ChatType;
 import com.ruoyi.common.utils.DateTimeUtil;
 import com.ruoyi.common.utils.bot.SendUtils;
@@ -9,14 +10,17 @@ import com.ruoyi.project.order.service.IBotOrderListService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -108,7 +112,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     execute(SendUtils.sendMessageInit(-1002228392062L, messageText, markup));
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
-                    insertOrderInfo(update, botOrderList, messagTexts);
+//                    insertOrderInfo(update, botOrderList, messagTexts);
                 }
             } catch (TelegramApiException e) {
                 log.info("机器人消息发送异常: {}", e.getMessage());
@@ -172,11 +176,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("确认");
-        button1.setCallbackData("button1");
-        button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
-        row.add(button1);
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         button2.setText("已取消");
         button2.setCallbackData("button2");
@@ -197,6 +196,12 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         rows.add(row);
         markup.setKeyboard(rows);
         return markup;
+    }
+
+    public static void main(String[] args) throws TelegramApiException {
+        TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
+        TelegramLongPollingBot bot = new TelegramBotPoll();
+        botsApi.registerBot(bot);
     }
 
 }
