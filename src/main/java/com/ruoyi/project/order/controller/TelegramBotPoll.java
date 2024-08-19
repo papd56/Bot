@@ -2,11 +2,14 @@ package com.ruoyi.project.order.controller;
 
 import com.ruoyi.common.constant.ChatType;
 import com.ruoyi.common.utils.bot.SendUtils;
+import com.ruoyi.project.common.RedisConstantKey;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.order.domain.BotOrderList;
 import com.ruoyi.project.order.service.IBotOrderListService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.cache.CacheProperties;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
@@ -18,12 +21,16 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @Log4j2
 public class TelegramBotPoll extends TelegramLongPollingBot {
 
     @Autowired
     private IBotOrderListService iBotOrderListService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Override
     public void onUpdateReceived(Update update) {
@@ -49,7 +56,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     log.info("报备信息异常: {}", e.getMessage());
                 }
             }
-            // 创建一个带有按钮的键盘
             try {
                 InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate(messageId);
                 execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
@@ -64,19 +70,16 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             String messageText = update.getMessage().getText();
             Integer messageId = update.getMessage().getMessageId();
             long chatId = update.getMessage().getChatId();
-            Chat chat = update.getMessage().getChat();
-            if (chat.getType().equalsIgnoreCase(ChatType.GROUP)) {
-                // 处理群组
-            } else if (chat.getType().equals(ChatType.PRIVATE)) {
-                // 处理私聊
-            } else if (chat.getType().equalsIgnoreCase(ChatType.CHANNEL)) {
-                // 处理频道
-            }
             //如果回调确认消息 包含(/start) 则会执行这个命令
             if (messageText.startsWith("/start")) {
                 try {
                     String text = "报备完成";
                     execute(SendUtils.sendMessageInit(chatId, text));
+                    if (redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION)) {
+                        Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
+                        InlineKeyboardMarkup markup = reportCompleted(messageId);
+                        execute(SendUtils.sendMessageInit(-1002228392062L, o.toString(), markup));
+                    }
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
                 }
@@ -102,6 +105,8 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         || messageText.contains("客户结算完整地址")) {
                     execute(SendUtils.sendMessageInit(-1002228392062L, messageText, markup));
                     String messagTexts = "发送成功，请在公群内查看";
+                    //将发送的消息存入到 缓存redis
+                    redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
                     insertOrderInfo(update, botOrderList, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
@@ -125,12 +130,11 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
 
     private void updateOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
         botOrderList.setTradeInfo(messagTexts);
-        botOrderList.setTradeUser(update.getMessage().getChat().getUserName());
-        botOrderList.setTradeTime(new Date(update.getMessage().getDate()));
-        botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
+        botOrderList.setTradeUser(update.getCallbackQuery().getFrom().getUserName());
+        botOrderList.setInitiatorReportUser(update.getCallbackQuery().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CANCELED.getCode());
         botOrderList.setUpdateTime(new Date());
-        iBotOrderListService.updateBotOrderList(botOrderList);
+        iBotOrderListService.insertBotOrderList(botOrderList);
     }
 
     @Override
@@ -184,6 +188,20 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         button1.setCallbackData("button1");
         button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
+        row.add(button1);
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    //通知报备群-报备完成
+    private InlineKeyboardMarkup reportCompleted(Integer messageId) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("报备成功");
+        button1.setCallbackData("button1");
         row.add(button1);
         rows.add(row);
         markup.setKeyboard(rows);
