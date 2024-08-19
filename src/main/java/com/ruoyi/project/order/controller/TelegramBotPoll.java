@@ -52,6 +52,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 InlineKeyboardMarkup inlineKeyboardMarkup = orderFinsh(messageId);
                 try {
                     execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
+                    updateOrderFinsh(update, botOrderList, text);
                 } catch (TelegramApiException e) {
                     log.info("报备信息异常: {}", e.getMessage());
                 }
@@ -134,6 +135,15 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         botOrderList.setTradeUser(update.getCallbackQuery().getFrom().getUserName());
         botOrderList.setInitiatorReportUser(update.getCallbackQuery().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CANCELED.getCode());
+        botOrderList.setUpdateTime(new Date());
+        iBotOrderListService.insertBotOrderList(botOrderList);
+    }
+
+    private void updateOrderFinsh(Update update, BotOrderList botOrderList, String messagTexts) {
+        botOrderList.setTradeInfo(messagTexts);
+        botOrderList.setTradeUser(update.getCallbackQuery().getFrom().getUserName());
+        botOrderList.setInitiatorReportUser(update.getCallbackQuery().getFrom().getFirstName());
+        botOrderList.setOrderStatus(OrderStatus.COMPLETED.getCode());
         botOrderList.setUpdateTime(new Date());
         iBotOrderListService.insertBotOrderList(botOrderList);
     }
