@@ -6,10 +6,8 @@ import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.order.domain.BotOrderList;
 import com.ruoyi.project.order.service.IBotOrderListService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -25,8 +23,6 @@ import java.util.Date;
 import java.util.List;
 
 @Log4j2
-@Component
-@RequiredArgsConstructor
 public class TelegramBotPoll extends TelegramLongPollingBot {
 
     @Autowired
@@ -110,7 +106,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     execute(SendUtils.sendMessageInit(-1002228392062L, messageText, markup));
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
-//                    insertOrderInfo(update, botOrderList, messagTexts);
+                    insertOrderInfo(update, botOrderList, messagTexts);
                 }
             } catch (TelegramApiException e) {
                 log.info("机器人消息发送异常: {}", e.getMessage());
