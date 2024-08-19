@@ -1,7 +1,6 @@
 package com.ruoyi.project.order.controller;
 
 import com.ruoyi.common.constant.ChatType;
-import com.ruoyi.common.utils.DateTimeUtil;
 import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.order.domain.BotOrderList;
@@ -9,14 +8,12 @@ import com.ruoyi.project.order.service.IBotOrderListService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.util.ArrayList;
 import java.util.Date;
@@ -57,7 +54,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate(messageId);
                 execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
                 //取消订单
-//                updateOrderInfo(update, botOrderList, text);
+                updateOrderInfo(update, botOrderList, text);
             } catch (TelegramApiException e) {
                 log.info("信息回调成功：{}", e.getMessage());
             }
@@ -99,7 +96,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "交易金额：100u\n" +
                             "订单完成时间：1天");
                     execute(sendMessage);
-//                    insertOrderInfo(update, botOrderList, sendMessage.getText());
+                    insertOrderInfo(update, botOrderList, sendMessage.getText());
                 } else if (messageText.contains("地区") || messageText.contains("地址")
                         || messageText.contains("交易金额") || messageText.contains("交易方对接人")
                         || messageText.contains("客户结算完整地址")) {
@@ -107,6 +104,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
                     insertOrderInfo(update, botOrderList, messagTexts);
+                    insertOrderInfo(update, botOrderList, messageText);
                 }
             } catch (TelegramApiException e) {
                 log.info("机器人消息发送异常: {}", e.getMessage());
@@ -118,21 +116,21 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
     private void insertOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
         botOrderList.setTradeInfo(messagTexts);
         botOrderList.setTradeUser(update.getMessage().getChat().getUserName());
-        botOrderList.setTradeTime(DateTimeUtil.formatTimestamp(update.getMessage().getDate()));
+        botOrderList.setTradeTime(new Date());
         botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CONFIRMED.getCode());
+        botOrderList.setCreateTime(new Date());
         iBotOrderListService.insertBotOrderList(botOrderList);
-        //创建报备订单
     }
 
     private void updateOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
         botOrderList.setTradeInfo(messagTexts);
         botOrderList.setTradeUser(update.getMessage().getChat().getUserName());
-        botOrderList.setTradeTime(DateTimeUtil.formatTimestamp(update.getMessage().getDate()));
+        botOrderList.setTradeTime(new Date(update.getMessage().getDate()));
         botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CANCELED.getCode());
         botOrderList.setUpdateTime(new Date());
-        //创建报备订单
+        iBotOrderListService.updateBotOrderList(botOrderList);
     }
 
     @Override
@@ -191,11 +189,4 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         markup.setKeyboard(rows);
         return markup;
     }
-
-    public static void main(String[] args) throws TelegramApiException {
-        TelegramBotsApi botsApi = new TelegramBotsApi(DefaultBotSession.class);
-        TelegramLongPollingBot bot = new TelegramBotPoll();
-        botsApi.registerBot(bot);
-    }
-
 }

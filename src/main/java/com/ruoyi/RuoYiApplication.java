@@ -7,7 +7,6 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 /**
  * 启动程序
- *
  */
 @SpringBootApplication(exclude = { DataSourceAutoConfiguration.class })
 public class RuoYiApplication
