@@ -83,6 +83,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 // 处理群组消息
                 chatIds = chat.getId();
                 // 保存群组 ID 到数据库或其他地方
+                redisTemplate.opsForValue().set(RedisConstantKey.GROUPID, chatIds);
                 botGroupList.setGroupId(chatIds);
                 botGroupList.setGroupName(chat.getTitle());
                 botGroupList.setUserName(update.getMessage().getFrom().getUserName());
@@ -97,10 +98,16 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 try {
                     String text = "报备完成";
                     execute(SendUtils.sendMessageInit(chatId, text));
-                    if (redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION)) {
+                    if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
                         Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
                         InlineKeyboardMarkup markup = reportCompleted(messageId);
-                        execute(SendUtils.sendMessageInit(chatIds, o.toString(), markup));
+                        //取出来当前发送消息的群组id
+                        if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.GROUPID))) {
+                            Object o1 = redisTemplate.opsForValue().get(RedisConstantKey.GROUPID);
+                            assert o1 != null;
+                            assert o != null;
+                            execute(SendUtils.sendMessageInit(Long.valueOf(o1.toString()), o.toString(), markup));
+                        }
                     }
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
@@ -125,7 +132,11 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         || messageText.contains("客户结算完整地址")) {
                     // 创建一个带有按钮的键盘
                     InlineKeyboardMarkup markup = createKeyboard(messageId);
-                    execute(SendUtils.sendMessageInit(chatIds, messageText, markup));
+                    if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.GROUPID))) {
+                        Object o = redisTemplate.opsForValue().get(RedisConstantKey.GROUPID);
+                        assert o != null;
+                        execute(SendUtils.sendMessageInit(Long.valueOf(o.toString()), messageText, markup));
+                    }
                     String messagTexts = "发送成功，请在公群内查看";
                     //将发送的消息存入到 缓存redis
                     redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
