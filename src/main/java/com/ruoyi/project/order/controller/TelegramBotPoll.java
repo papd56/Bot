@@ -100,7 +100,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     if (redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION)) {
                         Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
                         InlineKeyboardMarkup markup = reportCompleted(messageId);
-                        execute(SendUtils.sendMessageInit(-1002228392062L, o.toString(), markup));
+                        execute(SendUtils.sendMessageInit(chatIds, o.toString(), markup));
                     }
                 } catch (TelegramApiException e) {
                     throw new RuntimeException(e);
@@ -125,7 +125,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         || messageText.contains("客户结算完整地址")) {
                     // 创建一个带有按钮的键盘
                     InlineKeyboardMarkup markup = createKeyboard(messageId);
-                    execute(SendUtils.sendMessageInit(-1002228392062L, messageText, markup));
+                    execute(SendUtils.sendMessageInit(chatIds, messageText, markup));
                     String messagTexts = "发送成功，请在公群内查看";
                     //将发送的消息存入到 缓存redis
                     redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
