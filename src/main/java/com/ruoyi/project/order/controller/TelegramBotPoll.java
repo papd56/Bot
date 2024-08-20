@@ -85,6 +85,8 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 // 保存群组 ID 到数据库或其他地方
                 botGroupList.setGroupId(chatIds);
                 botGroupList.setGroupName(chat.getTitle());
+                botGroupList.setUserName(update.getMessage().getFrom().getUserName());
+                botGroupList.setNickName(update.getMessage().getFrom().getFirstName());
                 iBotGroupListService.insertBotGroupList(botGroupList);
             }
             String messageText = update.getMessage().getText();
