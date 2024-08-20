@@ -1,23 +1,21 @@
 package com.ruoyi.project.bot.group.controller;
 
-import java.util.List;
+import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.framework.aspectj.lang.annotation.Anonymous;
+import com.ruoyi.framework.aspectj.lang.annotation.Log;
+import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
+import com.ruoyi.framework.web.controller.BaseController;
+import com.ruoyi.framework.web.domain.AjaxResult;
+import com.ruoyi.framework.web.page.TableDataInfo;
+import com.ruoyi.project.bot.group.domain.BotGroup;
+import com.ruoyi.project.bot.group.service.IBotGroupService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import com.ruoyi.framework.aspectj.lang.annotation.Log;
-import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
-import com.ruoyi.project.bot.group.domain.BotGroup;
-import com.ruoyi.project.bot.group.service.IBotGroupService;
-import com.ruoyi.framework.web.controller.BaseController;
-import com.ruoyi.framework.web.domain.AjaxResult;
-import com.ruoyi.common.utils.poi.ExcelUtil;
-import com.ruoyi.framework.web.page.TableDataInfo;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 /**
  * 群组管理Controller
@@ -90,6 +88,20 @@ public class BotGroupController extends BaseController
     }
 
     /**
+     * 新增保存群组管理
+     */
+    @Anonymous
+    @PostMapping("/addGroup")
+    @ResponseBody
+    public int addGroup(@RequestBody BotGroup botGroup)
+    {
+        if (botGroupService.selectBotGroupList(botGroup).isEmpty()) {
+            return botGroupService.insertBotGroup(botGroup);
+        }
+        return 0;
+    }
+
+    /**
      * 修改群组管理
      */
     @RequiresPermissions("bot:group:edit")
@@ -111,6 +123,21 @@ public class BotGroupController extends BaseController
     public AjaxResult editSave(BotGroup botGroup)
     {
         return toAjax(botGroupService.updateBotGroup(botGroup));
+    }
+
+    /**
+     * 修改群组
+     */
+    @Anonymous
+    @PostMapping("/editGroup")
+    @ResponseBody
+    public int editGroup(@RequestBody BotGroup botGroup)
+    {
+        String groupName = botGroup.getGroupName();
+        botGroup.setGroupName("");
+        botGroup.setId(botGroupService.selectBotGroupList(botGroup).get(0).getId());
+        botGroup.setGroupName(groupName);
+        return botGroupService.updateBotGroup(botGroup);
     }
 
     /**

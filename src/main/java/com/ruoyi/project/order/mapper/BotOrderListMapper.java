@@ -1,6 +1,5 @@
 package com.ruoyi.project.order.mapper;
 
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.ruoyi.project.order.domain.BotOrderList;
 
 import java.util.List;
@@ -11,7 +10,7 @@ import java.util.List;
  * @author ruoyi
  * @date 2024-08-14
  */
-public interface BotOrderListMapper extends BaseMapper<BotOrderList>
+public interface BotOrderListMapper
 {
     /**
      * 查询订单列
