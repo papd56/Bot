@@ -130,6 +130,10 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 } else if (messageText.contains("地区") || messageText.contains("地址")
                         || messageText.contains("交易金额") || messageText.contains("交易方对接人")
                         || messageText.contains("客户结算完整地址")) {
+
+                    String messagTexts = "发送成功，请在公群内查看";
+                    //将发送的消息存入到 缓存redis
+                    execute(SendUtils.sendMessageInit(chatId, messagTexts));
                     // 创建一个带有按钮的键盘
                     InlineKeyboardMarkup markup = createKeyboard(messageId);
                     if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.GROUPID))) {
@@ -137,10 +141,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         assert o != null;
                         execute(SendUtils.sendMessageInit(Long.valueOf(o.toString()), messageText, markup));
                     }
-                    String messagTexts = "发送成功，请在公群内查看";
-                    //将发送的消息存入到 缓存redis
                     redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
-                    execute(SendUtils.sendMessageInit(chatId, messagTexts));
                     insertOrderInfo(update, botOrderList, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
                 }
