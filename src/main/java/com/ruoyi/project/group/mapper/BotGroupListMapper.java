@@ -20,6 +20,8 @@ public interface BotGroupListMapper
      */
     public BotGroupList selectBotGroupListById(Long id);
 
+    BotGroupList selectBotGroupByIdAndUserName(Long groupId, String userName);
+
     /**
      * 查询群组列列表
      *

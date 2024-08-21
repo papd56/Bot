@@ -32,6 +32,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectBotUserListVo"/>
         where id = #{id}
     </select>
+    <select id="selectBotGroupByIdAndUserName" resultType="com.ruoyi.project.user.domain.BotUserList">
+        select * from bot_user_list where tg_unqiue_id = #{userId} and user_name = #{userName}
+    </select>
 
     <insert id="insertBotUserList" parameterType="BotUserList" useGeneratedKeys="true" keyProperty="id">
         insert into bot_user_list

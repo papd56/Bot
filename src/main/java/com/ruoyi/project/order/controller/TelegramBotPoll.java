@@ -1,13 +1,16 @@
 package com.ruoyi.project.order.controller;
 
 import com.ruoyi.common.utils.bot.SendUtils;
-import com.ruoyi.project.bot.group.service.IBotGroupService;
 import com.ruoyi.project.common.RedisConstantKey;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.group.domain.BotGroupList;
+import com.ruoyi.project.group.mapper.BotGroupListMapper;
 import com.ruoyi.project.group.service.IBotGroupListService;
 import com.ruoyi.project.order.domain.BotOrderList;
 import com.ruoyi.project.order.service.IBotOrderListService;
+import com.ruoyi.project.user.domain.BotUserList;
+import com.ruoyi.project.user.mapper.BotUserListMapper;
+import com.ruoyi.project.user.service.IBotUserListService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -31,6 +34,15 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
 
     @Autowired
     private IBotGroupListService iBotGroupListService;
+
+    @Autowired
+    private BotUserListMapper botUserListMapper;
+
+    @Autowired
+    private BotGroupListMapper botGroupListMapper;
+
+    @Autowired
+    private IBotUserListService iBotUserListService;
 
     @Autowired
     private RedisTemplate<String, Object> redisTemplate;
@@ -75,6 +87,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         Long chatIds = 0L;
         if (update.hasMessage() && update.getMessage().hasText()) {
             BotGroupList botGroupList = new BotGroupList();
+            BotUserList botUserList = new BotUserList();
             //获取群组id
             Chat chat = update.getMessage().getChat();
             if (chat.isUserChat()) {
@@ -88,7 +101,24 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 botGroupList.setGroupName(chat.getTitle());
                 botGroupList.setUserName(update.getMessage().getFrom().getUserName());
                 botGroupList.setNickName(update.getMessage().getFrom().getFirstName());
-                iBotGroupListService.insertBotGroupList(botGroupList);
+                BotGroupList botGroupList1 = botGroupListMapper.selectBotGroupByIdAndUserName(chatIds, update.getMessage().getFrom().getUserName());
+                if (botGroupList1 == null) {
+                    iBotGroupListService.insertBotGroupList(botGroupList);
+                } else {
+                    iBotGroupListService.updateBotGroupList(botGroupList);
+                }
+
+                //初始化用户信息
+                botUserList.setTgUnqiueId(update.getMessage().getFrom().getId());
+                botUserList.setUserName(update.getMessage().getFrom().getUserName());
+                botUserList.setGroupName(update.getMessage().getChat().getTitle());
+                botUserList.setNickName(update.getMessage().getFrom().getFirstName());
+                BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
+                if (botUserList1 == null) {
+                    iBotUserListService.insertBotUserList(botUserList);
+                } else {
+                    iBotUserListService.updateBotUserList(botUserList);
+                }
             }
             String messageText = update.getMessage().getText();
             Integer messageId = update.getMessage().getMessageId();
@@ -96,8 +126,19 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             //如果回调确认消息 包含(/start) 则会执行这个命令
             if (messageText.startsWith("/start")) {
                 try {
-                    String text = "报备完成";
-                    execute(SendUtils.sendMessageInit(chatId, text));
+                    List<BotUserList> list = botUserListMapper.selectBotUserListList(new BotUserList());
+                    for (BotUserList botUserList1 : list) {
+                        if (botUserList1.getTgUnqiueId().equals(update.getMessage().getFrom().getId())) {
+                            String text = "报备完成";
+                            execute(SendUtils.sendMessageInit(chatId, text));
+                            break;
+                        } else {
+                            String text = "暂无权限";
+                            execute(SendUtils.sendMessageInit(chatId, text));
+                            return;
+                        }
+                    }
+
                     if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
                         Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
                         InlineKeyboardMarkup markup = reportCompleted(messageId);

@@ -46,6 +46,15 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         where id = #{id}
     </select>
 
+    <select id="select" parameterType="Long" resultMap="BotGroupListResult">
+        <include refid="selectBotGroupListVo"/>
+        where id = #{id}
+    </select>
+    <select id="selectBotGroupByIdAndUserName" resultType="com.ruoyi.project.group.domain.BotGroupList">
+        select * from bot_group_list where group_id = #{groupId} and user_name = #{userName}
+    </select>
+
+
     <insert id="insertBotGroupList" parameterType="BotGroupList" useGeneratedKeys="true" keyProperty="id">
         insert into bot_group_list
         <trim prefix="(" suffix=")" suffixOverrides=",">
