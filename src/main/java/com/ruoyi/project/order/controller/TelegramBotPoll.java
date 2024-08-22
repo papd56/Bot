@@ -14,6 +14,7 @@ import com.ruoyi.project.user.mapper.BotUserListMapper;
 import com.ruoyi.project.user.service.IBotUserListService;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
@@ -104,6 +105,10 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             if (botGroupList1 == null) {
                 iBotGroupListService.insertBotGroupList(botGroupList);
             } else {
+                botGroupList1.setGroupId(botGroupList.getGroupId());
+                botGroupList1.setGroupName(botGroupList.getGroupName());
+                botGroupList1.setUserName(botGroupList.getUserName());
+                botGroupList1.setNickName(botGroupList.getNickName());
                 iBotGroupListService.updateBotGroupList(botGroupList1);
             }
 
@@ -120,6 +125,11 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             if (botUserList1 == null) {
                 iBotUserListService.insertBotUserList(botUserList);
             } else {
+                botUserList1.setGroupId(botUserList.getGroupId());
+                botUserList1.setTgUnqiueId(botUserList.getTgUnqiueId());
+                botUserList1.setUserName(botUserList.getUserName());
+                botUserList1.setNickName(botUserList.getNickName());
+                botUserList1.setGroupName(botUserList.getGroupName());
                 iBotUserListService.updateBotUserList(botUserList1);
             }
 
