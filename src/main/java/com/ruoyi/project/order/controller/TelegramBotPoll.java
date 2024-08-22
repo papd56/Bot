@@ -152,7 +152,13 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     // 创建一个带有按钮的键盘
                     InlineKeyboardMarkup markup = createKeyboard(messageId);
                     if (botUserList2 != null) {
-                        execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), messageText, markup));
+                        String text = update.getMessage().getEntities().get(0).getText();
+                        String replace = text.replace("@", "");
+                        String replace1 = messageText.replace(replace, "******");
+                        execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), replace1, markup));
+                        //消息通知用户报备成功
+                        InlineKeyboardMarkup success = reportCompleted(messageId);
+                        execute(SendUtils.sendMessageInit(botUserList2.getTgUnqiueId(), messageText, success));
                     } else {
                         SendMessage sendMessage = new SendMessage();
                         sendMessage.setText("报备用户不存在");
