@@ -11,89 +11,100 @@ import com.ruoyi.framework.web.domain.BaseEntity;
  * @author ruoyi
  * @date 2024-08-14
  */
-public class BotUserList extends BaseEntity
-{
+public class BotUserList extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
-    /** 主键id */
+    /**
+     * 主键id
+     */
     private Long id;
+    /**
+     * 群组id
+     */
+    private Long groupId;
 
-    /** tg唯一标识 */
+    /**
+     * tg唯一标识
+     */
     @Excel(name = "tg唯一标识")
     private Long tgUnqiueId;
 
-    /** 群组名称 */
+    /**
+     * 群组名称
+     */
     @Excel(name = "群组名称")
     private String groupName;
 
-    /** 用户名称 */
+    /**
+     * 用户名称
+     */
     @Excel(name = "用户名称")
     private String userName;
 
-    /** 用户昵称 */
+    /**
+     * 用户昵称
+     */
     @Excel(name = "用户昵称")
     private String nickName;
 
-    public void setId(Long id)
-    {
+    public Long getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(Long groupId) {
+        this.groupId = groupId;
+    }
+
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Long getId()
-    {
+    public Long getId() {
         return id;
     }
 
-    public void setTgUnqiueId(Long tgUnqiueId)
-    {
+    public void setTgUnqiueId(Long tgUnqiueId) {
         this.tgUnqiueId = tgUnqiueId;
     }
 
-    public Long getTgUnqiueId()
-    {
+    public Long getTgUnqiueId() {
         return tgUnqiueId;
     }
 
-    public void setGroupName(String groupName)
-    {
+    public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
 
-    public String getGroupName()
-    {
+    public String getGroupName() {
         return groupName;
     }
 
-    public void setUserName(String userName)
-    {
+    public void setUserName(String userName) {
         this.userName = userName;
     }
 
-    public String getUserName()
-    {
+    public String getUserName() {
         return userName;
     }
 
-    public void setNickName(String nickName)
-    {
+    public void setNickName(String nickName) {
         this.nickName = nickName;
     }
 
-    public String getNickName()
-    {
+    public String getNickName() {
         return nickName;
     }
 
     @Override
     public String toString() {
-        return new ToStringBuilder(this,ToStringStyle.MULTI_LINE_STYLE)
-            .append("id", getId())
-            .append("tgUnqiueId", getTgUnqiueId())
-            .append("groupName", getGroupName())
-            .append("userName", getUserName())
-            .append("nickName", getNickName())
-            .append("createTime", getCreateTime())
-            .append("updateTime", getUpdateTime())
-            .toString();
+        return new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE)
+                .append("id", getId())
+                .append("tgUnqiueId", getTgUnqiueId())
+                .append("groupName", getGroupName())
+                .append("userName", getUserName())
+                .append("nickName", getNickName())
+                .append("createTime", getCreateTime())
+                .append("updateTime", getUpdateTime())
+                .toString();
     }
 }

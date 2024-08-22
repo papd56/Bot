@@ -1,30 +1,40 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.project.user.mapper.BotUserListMapper">
 
     <resultMap type="BotUserList" id="BotUserListResult">
-        <result property="id"    column="id"    />
-        <result property="tgUnqiueId"    column="tg_unqiue_id"    />
-        <result property="groupName"    column="group_name"    />
-        <result property="userName"    column="user_name"    />
-        <result property="nickName"    column="nick_name"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="updateTime"    column="update_time"    />
+        <result property="id" column="id"/>
+        <result property="tgUnqiueId" column="tg_unqiue_id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
     </resultMap>
 
     <sql id="selectBotUserListVo">
-        select id, tg_unqiue_id, group_name, user_name, nick_name, create_time, update_time from bot_user_list
+        select id,
+               group_id,
+               tg_unqiue_id,
+               group_name,
+               user_name,
+               nick_name,
+               create_time,
+               update_time
+        from bot_user_list
     </sql>
 
     <select id="selectBotUserListList" parameterType="BotUserList" resultMap="BotUserListResult">
         <include refid="selectBotUserListVo"/>
         <where>
-            <if test="tgUnqiueId != null "> and tg_unqiue_id = #{tgUnqiueId}</if>
-            <if test="groupName != null  and groupName != ''"> and group_name like concat('%', #{groupName}, '%')</if>
-            <if test="userName != null  and userName != ''"> and user_name like concat('%', #{userName}, '%')</if>
-            <if test="nickName != null  and nickName != ''"> and nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="tgUnqiueId != null ">and tg_unqiue_id = #{tgUnqiueId}</if>
+            <if test="groupId != null ">and group_id = #{groupId}</if>
+            <if test="groupName != null  and groupName != ''">and group_name like concat('%', #{groupName}, '%')</if>
+            <if test="userName != null  and userName != ''">and user_name like concat('%', #{userName}, '%')</if>
+            <if test="nickName != null  and nickName != ''">and nick_name like concat('%', #{nickName}, '%')</if>
         </where>
     </select>
 
@@ -32,34 +42,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectBotUserListVo"/>
         where id = #{id}
     </select>
-    <select id="selectBotGroupByIdAndUserName" resultType="com.ruoyi.project.user.domain.BotUserList">
-        select * from bot_user_list where tg_unqiue_id = #{userId} and user_name = #{userName}
+    <select id="selectBotGroupByIdAndUserName" resultMap="BotUserListResult">
+        <include refid="selectBotUserListVo"/>
+        where tg_unqiue_id = #{userId}
+          and user_name = #{userName}
+    </select>
+    <select id="selectByName" resultMap="BotUserListResult"
+            parameterType="java.lang.String">
+        <include refid="selectBotUserListVo"/>
+        where user_name = #{userName}
     </select>
 
     <insert id="insertBotUserList" parameterType="BotUserList" useGeneratedKeys="true" keyProperty="id">
         insert into bot_user_list
         <trim prefix="(" suffix=")" suffixOverrides=",">
             <if test="tgUnqiueId != null">tg_unqiue_id,</if>
+            <if test="groupId != null">group_id,</if>
             <if test="groupName != null">group_name,</if>
             <if test="userName != null">user_name,</if>
             <if test="nickName != null">nick_name,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateTime != null">update_time,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="tgUnqiueId != null">#{tgUnqiueId},</if>
+            <if test="groupId != null">#{groupId},</if>
             <if test="groupName != null">#{groupName},</if>
             <if test="userName != null">#{userName},</if>
             <if test="nickName != null">#{nickName},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateBotUserList" parameterType="BotUserList">
         update bot_user_list
         <trim prefix="SET" suffixOverrides=",">
             <if test="tgUnqiueId != null">tg_unqiue_id = #{tgUnqiueId},</if>
+            <if test="groupId != null">group_id = #{groupId},</if>
             <if test="groupName != null">group_name = #{groupName},</if>
             <if test="userName != null">user_name = #{userName},</if>
             <if test="nickName != null">nick_name = #{nickName},</if>
@@ -70,7 +90,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <delete id="deleteBotUserListById" parameterType="Long">
-        delete from bot_user_list where id = #{id}
+        delete
+        from bot_user_list
+        where id = #{id}
     </delete>
 
     <delete id="deleteBotUserListByIds" parameterType="String">
