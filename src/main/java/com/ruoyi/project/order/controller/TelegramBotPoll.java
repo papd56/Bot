@@ -1,5 +1,6 @@
 package com.ruoyi.project.order.controller;
 
+import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.common.RedisConstantKey;
 import com.ruoyi.project.enu.OrderStatus;
@@ -14,10 +15,12 @@ import com.ruoyi.project.user.service.IBotUserListService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -83,77 +86,42 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 return;
             }
         }
-        //群组id
-        Long chatIds = 0L;
-        if (update.hasMessage() && update.getMessage().hasText()) {
+        //飞机用户第一次加群
+        if (!CollectionUtils.isEmpty(update.getMessage().getNewChatMembers())) {
+            //第一次进群初始化群组信息
             BotGroupList botGroupList = new BotGroupList();
-            BotUserList botUserList = new BotUserList();
-            //获取群组id
-            Chat chat = update.getMessage().getChat();
-            if (chat.isUserChat()) {
-                // 处理私聊消息
-            } else if (chat.getType().equalsIgnoreCase("supergroup")) {
-                // 处理群组消息
-                chatIds = chat.getId();
-                // 保存群组 ID 到数据库或其他地方
-                redisTemplate.opsForValue().set(RedisConstantKey.GROUPID, chatIds);
-                botGroupList.setGroupId(chatIds);
-                botGroupList.setGroupName(chat.getTitle());
-                botGroupList.setUserName(update.getMessage().getFrom().getUserName());
-                botGroupList.setNickName(update.getMessage().getFrom().getFirstName());
-                BotGroupList botGroupList1 = botGroupListMapper.selectBotGroupByIdAndUserName(chatIds, update.getMessage().getFrom().getUserName());
-                if (botGroupList1 == null) {
-                    iBotGroupListService.insertBotGroupList(botGroupList);
-                } else {
-                    iBotGroupListService.updateBotGroupList(botGroupList);
-                }
-
-                //初始化用户信息
-                botUserList.setTgUnqiueId(update.getMessage().getFrom().getId());
-                botUserList.setUserName(update.getMessage().getFrom().getUserName());
-                botUserList.setGroupName(update.getMessage().getChat().getTitle());
-                botUserList.setNickName(update.getMessage().getFrom().getFirstName());
-                BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
-                if (botUserList1 == null) {
-                    iBotUserListService.insertBotUserList(botUserList);
-                } else {
-                    iBotUserListService.updateBotUserList(botUserList);
-                }
+            botGroupList.setGroupId(update.getMessage().getChat().getId());
+            botGroupList.setGroupName(update.getMessage().getChat().getTitle());
+            botGroupList.setUserName(update.getMessage().getNewChatMembers().get(0).getUserName());
+            botGroupList.setNickName(update.getMessage().getNewChatMembers().get(0).getFirstName());
+            BotGroupList botGroupList1 = botGroupListMapper.selectBotGroupByIdAndUserName(botGroupList.getGroupId(), botGroupList.getUserName());
+            if (botGroupList1 == null) {
+                iBotGroupListService.insertBotGroupList(botGroupList);
+            } else {
+                iBotGroupListService.updateBotGroupList(botGroupList1);
             }
+
+            //第一次进群初始化用户信息
+            BotUserList botUserList = new BotUserList();
+            //初始化用户信息
+            botUserList.setGroupId(update.getMessage().getChat().getId());
+            botUserList.setTgUnqiueId(update.getMessage().getNewChatMembers().get(0).getId());
+            botUserList.setUserName(update.getMessage().getNewChatMembers().get(0).getUserName());
+            botUserList.setGroupName(update.getMessage().getChat().getTitle());
+            botUserList.setNickName(update.getMessage().getNewChatMembers().get(0).getFirstName());
+
+            BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(botUserList.getGroupId(), botUserList.getUserName());
+            if (botUserList1 == null) {
+                iBotUserListService.insertBotUserList(botUserList);
+            } else {
+                iBotUserListService.updateBotUserList(botUserList1);
+            }
+
+        }
+        if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             Integer messageId = update.getMessage().getMessageId();
             long chatId = update.getMessage().getChatId();
-            //如果回调确认消息 包含(/start) 则会执行这个命令
-            if (messageText.startsWith("/start")) {
-                try {
-                    List<BotUserList> list = botUserListMapper.selectBotUserListList(new BotUserList());
-                    for (BotUserList botUserList1 : list) {
-                        if (botUserList1.getTgUnqiueId().equals(update.getMessage().getFrom().getId())) {
-                            String text = "报备完成";
-                            execute(SendUtils.sendMessageInit(chatId, text));
-                            break;
-                        } else {
-                            String text = "暂无权限";
-                            execute(SendUtils.sendMessageInit(chatId, text));
-                            return;
-                        }
-                    }
-
-                    if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
-                        Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
-                        InlineKeyboardMarkup markup = reportCompleted(messageId);
-                        //取出来当前发送消息的群组id
-                        if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.GROUPID))) {
-                            Object o1 = redisTemplate.opsForValue().get(RedisConstantKey.GROUPID);
-                            assert o1 != null;
-                            assert o != null;
-                            execute(SendUtils.sendMessageInit(Long.valueOf(o1.toString()), o.toString(), markup));
-                        }
-                    }
-                } catch (TelegramApiException e) {
-                    throw new RuntimeException(e);
-                }
-            }
             try {
                 if (messageText.equals("./start")) {
                     execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
@@ -168,23 +136,53 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "订单完成时间：1天");
                     execute(sendMessage);
                     insertOrderInfo(update, botOrderList, sendMessage.getText());
-                } else if (messageText.contains("地区") || messageText.contains("地址")
+                }
+                //获取报备用户名称
+                BotUserList botUserList2 = null;
+                if (messageText.contains("地区") || messageText.contains("地址")
                         || messageText.contains("交易金额") || messageText.contains("交易方对接人")
                         || messageText.contains("客户结算完整地址")) {
-
-                    String messagTexts = "发送成功，请在公群内查看";
+                    if (!StringUtils.isEmpty(update.getMessage().getEntities().get(0).getText())) {
+                        String userName = update.getMessage().getEntities().get(0).getText();
+                        String replace = userName.replace("@", "");
+                        botUserList2 = botUserListMapper.selectByName(replace);
+                    }
                     //将发送的消息存入到 缓存redis
-                    execute(SendUtils.sendMessageInit(chatId, messagTexts));
+                    redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
                     // 创建一个带有按钮的键盘
                     InlineKeyboardMarkup markup = createKeyboard(messageId);
-                    if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.GROUPID))) {
-                        Object o = redisTemplate.opsForValue().get(RedisConstantKey.GROUPID);
-                        assert o != null;
-                        execute(SendUtils.sendMessageInit(Long.valueOf(o.toString()), messageText, markup));
+                    if (botUserList2 != null) {
+                        execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), messageText, markup));
+                    } else {
+                        SendMessage sendMessage = new SendMessage();
+                        sendMessage.setText("报备用户不存在");
+                        sendMessage.setChatId(chatId);
+                        execute(sendMessage);
+                        return;
                     }
-                    redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
+                    String messagTexts = "发送成功，请在公群内查看";
+                    execute(SendUtils.sendMessageInit(chatId, messagTexts));
                     insertOrderInfo(update, botOrderList, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
+                }
+                //如果回调确认消息 包含(/start) 则会执行这个命令
+                if (messageText.startsWith("/start")) {
+                    BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
+                    if (botUserList1 != null) {
+                        String text = "报备完成";
+                        execute(SendUtils.sendMessageInit(chatId, text));
+                    } else {
+                        String text = "暂无权限";
+                        execute(SendUtils.sendMessageInit(chatId, text));
+                    }
+                    if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
+                        Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
+                        InlineKeyboardMarkup markup = reportCompleted(messageId);
+                        if (botUserList1 != null) {
+                            //取出来当前发送消息的群组id
+                            execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), o.toString(), markup));
+                        }
+                    }
                 }
             } catch (TelegramApiException e) {
                 log.info("机器人消息发送异常: {}", e.getMessage());

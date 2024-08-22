@@ -2,6 +2,7 @@ package com.ruoyi.project.user.mapper;
 
 import com.ruoyi.project.group.domain.BotGroupList;
 import com.ruoyi.project.user.domain.BotUserList;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -20,6 +21,8 @@ public interface BotUserListMapper
      * @return 机器人用户列
      */
     public BotUserList selectBotUserListById(Long id);
+
+    BotUserList selectByName(@Param("userName") String userName);
 
     BotUserList selectBotGroupByIdAndUserName(Long userId, String userName);
 
