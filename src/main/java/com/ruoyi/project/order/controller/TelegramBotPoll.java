@@ -287,7 +287,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
         InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setText("报备成功");
+        button1.setText("✅");
         button1.setCallbackData("button1");
         row.add(button1);
         rows.add(row);
