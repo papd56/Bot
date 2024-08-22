@@ -74,16 +74,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         </foreach>
     </delete>
 
-    <insert id="insertBotUsers" parameterType="java.util.List" useGeneratedKeys="true" keyProperty="id">
+    <insert id="insertBotUsers" parameterType="java.util.List">
         insert into bot_user (bot_id, user_id, user_name, user_nickname)
-        VALUES
+        values
         <foreach collection="botUsers" item="botUser" separator=",">
-            (
-            <if test="botId != null and botId != ''">#{botUser.botId},</if>
-            <if test="userId != null and userId != ''">#{botUser.userId},</if>
-            <if test="userName != null and userName != ''">#{botUser.userName},</if>
-            <if test="userNickname != null and userNickname != ''">#{botUser.userNickname}</if>
-            )
+            (#{botUser.botId}, #{botUser.userId}, #{botUser.userName}, #{botUser.userNickname})
         </foreach>
     </insert>
 </mapper>
