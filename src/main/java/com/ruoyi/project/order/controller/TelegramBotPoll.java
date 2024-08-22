@@ -25,9 +25,12 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Log4j2
 public class TelegramBotPoll extends TelegramLongPollingBot {
@@ -166,9 +169,20 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         execute(sendMessage);
                         return;
                     }
+
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
-                    insertOrderInfo(update, botOrderList, messagTexts);
+                    // 正则表达式：匹配"交易金额:"后面的数字和"元"
+                    Pattern pattern = Pattern.compile("交易金额：(\\d+)");
+                    Matcher matcher = pattern.matcher(messageText);
+                    if (matcher.find()) {
+                        String amountStr = matcher.group(1);
+                        BigDecimal bigDecimal = new BigDecimal(amountStr);
+                        botOrderList.setTransactionAmount(bigDecimal);
+                    }
+                    BotOrderList botOrderList1 = new BotOrderList();
+                    botOrderList1.setTransactionAmount(BigDecimal.ZERO);
+                    insertOrderInfo(update, botOrderList1, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
                 }
                 //如果回调确认消息 包含(/start) 则会执行这个命令
@@ -263,19 +277,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         button2.setText("已取消");
         button2.setCallbackData("button2");
         row.add(button2);
-        rows.add(row);
-        markup.setKeyboard(rows);
-        return markup;
-    }
-
-    private InlineKeyboardMarkup baobeiFinsh(Integer messageId) {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setCallbackData("button1");
-        button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
-        row.add(button1);
         rows.add(row);
         markup.setKeyboard(rows);
         return markup;
