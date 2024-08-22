@@ -13,6 +13,8 @@ import com.ruoyi.project.user.domain.BotUserList;
 import com.ruoyi.project.user.mapper.BotUserListMapper;
 import com.ruoyi.project.user.service.IBotUserListService;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
@@ -22,12 +24,17 @@ import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Log4j2
 public class TelegramBotPoll extends TelegramLongPollingBot {
@@ -98,6 +105,10 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             if (botGroupList1 == null) {
                 iBotGroupListService.insertBotGroupList(botGroupList);
             } else {
+                botGroupList1.setGroupId(botGroupList.getGroupId());
+                botGroupList1.setGroupName(botGroupList.getGroupName());
+                botGroupList1.setUserName(botGroupList.getUserName());
+                botGroupList1.setNickName(botGroupList.getNickName());
                 iBotGroupListService.updateBotGroupList(botGroupList1);
             }
 
@@ -110,10 +121,15 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             botUserList.setGroupName(update.getMessage().getChat().getTitle());
             botUserList.setNickName(update.getMessage().getNewChatMembers().get(0).getFirstName());
 
-            BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(botUserList.getGroupId(), botUserList.getUserName());
+            BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(botUserList.getTgUnqiueId(), botUserList.getUserName());
             if (botUserList1 == null) {
                 iBotUserListService.insertBotUserList(botUserList);
             } else {
+                botUserList1.setGroupId(botUserList.getGroupId());
+                botUserList1.setTgUnqiueId(botUserList.getTgUnqiueId());
+                botUserList1.setUserName(botUserList.getUserName());
+                botUserList1.setNickName(botUserList.getNickName());
+                botUserList1.setGroupName(botUserList.getGroupName());
                 iBotUserListService.updateBotUserList(botUserList1);
             }
 
@@ -152,7 +168,13 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     // 创建一个带有按钮的键盘
                     InlineKeyboardMarkup markup = createKeyboard(messageId);
                     if (botUserList2 != null) {
-                        execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), messageText, markup));
+                        String text = update.getMessage().getEntities().get(0).getText();
+                        String replace = text.replace("@", "");
+                        String replace1 = messageText.replace(replace, "******");
+                        execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), replace1, markup));
+                        //消息通知用户报备成功
+                        InlineKeyboardMarkup success = reportCompleted(messageId);
+                        execute(SendUtils.sendMessageInit(botUserList2.getTgUnqiueId(), messageText, success));
                     } else {
                         SendMessage sendMessage = new SendMessage();
                         sendMessage.setText("报备用户不存在");
@@ -160,11 +182,32 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         execute(sendMessage);
                         return;
                     }
+
                     String messagTexts = "发送成功，请在公群内查看";
                     execute(SendUtils.sendMessageInit(chatId, messagTexts));
-                    insertOrderInfo(update, botOrderList, messagTexts);
+                    // 正则表达式：匹配"交易金额:"后面的数字和"元"
+                    Pattern pattern = Pattern.compile("交易金额：(\\d+)");
+                    Matcher matcher = pattern.matcher(messageText);
+                    if (matcher.find()) {
+                        String amountStr = matcher.group(1);
+                        BigDecimal bigDecimal = new BigDecimal(amountStr);
+                        botOrderList.setTransactionAmount(bigDecimal);
+                    }
+                    BotOrderList botOrderList1 = new BotOrderList();
+                    botOrderList1.setTransactionAmount(BigDecimal.ZERO);
+                    insertOrderInfo(update, botOrderList1, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
                 }
+
+                //如果请求是b0 操作则显示账单统计
+                if (messageText.equalsIgnoreCase("b0")) {
+                    String userName = update.getMessage().getFrom().getUserName();
+                    Long groupId = update.getMessage().getChat().getId();
+                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                    SendMessage sendMessage = getSendMessage(chatId, botGroupList);
+                    execute(sendMessage);
+                }
+
                 //如果回调确认消息 包含(/start) 则会执行这个命令
                 if (messageText.startsWith("/start")) {
                     BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
@@ -188,6 +231,15 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 log.info("机器人消息发送异常: {}", e.getMessage());
             }
         }
+    }
+
+    private static @NotNull SendMessage getSendMessage(long chatId, BotGroupList botGroupList) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(botGroupList.getGroupName() + "\n"
+                + "交易完成:" + botGroupList.getFinishAmount() + "\n" + "交易中:" + botGroupList.getTrandPendingAmount() + "\n" +
+                "剩下可报备金额:" + botGroupList.getBalance());
+        return sendMessage;
     }
 
     private void insertOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
@@ -257,19 +309,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         button2.setText("已取消");
         button2.setCallbackData("button2");
         row.add(button2);
-        rows.add(row);
-        markup.setKeyboard(rows);
-        return markup;
-    }
-
-    private InlineKeyboardMarkup baobeiFinsh(Integer messageId) {
-        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
-        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-        List<InlineKeyboardButton> row = new ArrayList<>();
-        InlineKeyboardButton button1 = new InlineKeyboardButton();
-        button1.setCallbackData("button1");
-        button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
-        row.add(button1);
         rows.add(row);
         markup.setKeyboard(rows);
         return markup;
