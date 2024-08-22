@@ -1,43 +1,56 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
-PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
-"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.ruoyi.project.group.mapper.BotGroupListMapper">
 
     <resultMap type="BotGroupList" id="BotGroupListResult">
-        <result property="id"    column="id"    />
-        <result property="groupId"    column="group_id"    />
-        <result property="groupName"    column="group_name"    />
-        <result property="userName"    column="user_name"    />
-        <result property="nickName"    column="nick_name"    />
-        <result property="isNotManage"    column="is_not_manage"    />
-        <result property="groupAmount"    column="group_amount"    />
-        <result property="trandPendingAmount"    column="trand_pending_amount"    />
-        <result property="balance"    column="balance"    />
-        <result property="finishAmount"    column="finish_amount"    />
-        <result property="groupNumber"    column="group_number"    />
-        <result property="createTime"    column="create_time"    />
-        <result property="boosTgId"    column="boos_tg_id"    />
+        <result property="id" column="id"/>
+        <result property="groupId" column="group_id"/>
+        <result property="groupName" column="group_name"/>
+        <result property="userName" column="user_name"/>
+        <result property="nickName" column="nick_name"/>
+        <result property="isNotManage" column="is_not_manage"/>
+        <result property="groupAmount" column="group_amount"/>
+        <result property="trandPendingAmount" column="trand_pending_amount"/>
+        <result property="balance" column="balance"/>
+        <result property="finishAmount" column="finish_amount"/>
+        <result property="groupNumber" column="group_number"/>
+        <result property="createTime" column="create_time"/>
+        <result property="boosTgId" column="boos_tg_id"/>
     </resultMap>
 
     <sql id="selectBotGroupListVo">
-        select id, group_id, group_name, user_name, nick_name, is_not_manage, group_amount, trand_pending_amount, balance, finish_amount, group_number, create_time, boos_tg_id from bot_group_list
+        select id,
+               group_id,
+               group_name,
+               user_name,
+               nick_name,
+               is_not_manage,
+               group_amount,
+               trand_pending_amount,
+               balance,
+               finish_amount,
+               group_number,
+               create_time,
+               boos_tg_id
+        from bot_group_list
     </sql>
 
     <select id="selectBotGroupListList" parameterType="BotGroupList" resultMap="BotGroupListResult">
         <include refid="selectBotGroupListVo"/>
         <where>
-            <if test="groupId != null "> and group_id = #{groupId}</if>
-            <if test="groupName != null  and groupName != ''"> and group_name like concat('%', #{groupName}, '%')</if>
-            <if test="userName != null  and userName != ''"> and user_name like concat('%', #{userName}, '%')</if>
-            <if test="nickName != null  and nickName != ''"> and nick_name like concat('%', #{nickName}, '%')</if>
-            <if test="isNotManage != null "> and is_not_manage = #{isNotManage}</if>
-            <if test="groupAmount != null "> and group_amount = #{groupAmount}</if>
-            <if test="trandPendingAmount != null "> and trand_pending_amount = #{trandPendingAmount}</if>
-            <if test="balance != null "> and balance = #{balance}</if>
-            <if test="finishAmount != null "> and finish_amount = #{finishAmount}</if>
-            <if test="groupNumber != null "> and group_number = #{groupNumber}</if>
-            <if test="boosTgId != null "> and boos_tg_id = #{boosTgId}</if>
+            <if test="groupId != null ">and group_id = #{groupId}</if>
+            <if test="groupName != null  and groupName != ''">and group_name like concat('%', #{groupName}, '%')</if>
+            <if test="userName != null  and userName != ''">and user_name like concat('%', #{userName}, '%')</if>
+            <if test="nickName != null  and nickName != ''">and nick_name like concat('%', #{nickName}, '%')</if>
+            <if test="isNotManage != null ">and is_not_manage = #{isNotManage}</if>
+            <if test="groupAmount != null ">and group_amount = #{groupAmount}</if>
+            <if test="trandPendingAmount != null ">and trand_pending_amount = #{trandPendingAmount}</if>
+            <if test="balance != null ">and balance = #{balance}</if>
+            <if test="finishAmount != null ">and finish_amount = #{finishAmount}</if>
+            <if test="groupNumber != null ">and group_number = #{groupNumber}</if>
+            <if test="boosTgId != null ">and boos_tg_id = #{boosTgId}</if>
         </where>
     </select>
 
@@ -50,8 +63,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectBotGroupListVo"/>
         where id = #{id}
     </select>
-    <select id="selectBotGroupByIdAndUserName" resultType="com.ruoyi.project.group.domain.BotGroupList">
-        select * from bot_group_list where group_id = #{groupId} and user_name = #{userName}
+    <select id="selectBotGroupByIdAndUserName" resultMap="BotGroupListResult">
+        <include refid="selectBotGroupListVo"/>
+        where group_id = #{groupId} and user_name = #{userName}
     </select>
 
 
@@ -70,7 +84,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="groupNumber != null">group_number,</if>
             <if test="createTime != null">create_time,</if>
             <if test="boosTgId != null">boos_tg_id,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="groupId != null">#{groupId},</if>
             <if test="groupName != null">#{groupName},</if>
@@ -84,7 +98,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="groupNumber != null">#{groupNumber},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="boosTgId != null">#{boosTgId},</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateBotGroupList" parameterType="BotGroupList">
@@ -107,7 +121,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </update>
 
     <delete id="deleteBotGroupListById" parameterType="Long">
-        delete from bot_group_list where id = #{id}
+        delete
+        from bot_group_list
+        where id = #{id}
     </delete>
 
     <delete id="deleteBotGroupListByIds" parameterType="String">

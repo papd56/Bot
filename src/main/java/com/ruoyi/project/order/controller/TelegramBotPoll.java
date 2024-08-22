@@ -13,6 +13,7 @@ import com.ruoyi.project.user.domain.BotUserList;
 import com.ruoyi.project.user.mapper.BotUserListMapper;
 import com.ruoyi.project.user.service.IBotUserListService;
 import lombok.extern.log4j.Log4j2;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
@@ -22,6 +23,8 @@ import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
@@ -113,7 +116,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             botUserList.setGroupName(update.getMessage().getChat().getTitle());
             botUserList.setNickName(update.getMessage().getNewChatMembers().get(0).getFirstName());
 
-            BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(botUserList.getGroupId(), botUserList.getUserName());
+            BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(botUserList.getTgUnqiueId(), botUserList.getUserName());
             if (botUserList1 == null) {
                 iBotUserListService.insertBotUserList(botUserList);
             } else {
@@ -185,6 +188,16 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     insertOrderInfo(update, botOrderList1, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
                 }
+
+                //如果请求是b0 操作则显示账单统计
+                if (messageText.equalsIgnoreCase("b0")) {
+                    String userName = update.getMessage().getFrom().getUserName();
+                    Long groupId = update.getMessage().getChat().getId();
+                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                    SendMessage sendMessage = getSendMessage(chatId, botGroupList);
+                    execute(sendMessage);
+                }
+
                 //如果回调确认消息 包含(/start) 则会执行这个命令
                 if (messageText.startsWith("/start")) {
                     BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
@@ -208,6 +221,15 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 log.info("机器人消息发送异常: {}", e.getMessage());
             }
         }
+    }
+
+    private static @NotNull SendMessage getSendMessage(long chatId, BotGroupList botGroupList) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(botGroupList.getGroupName() + "\n"
+                + "交易完成:" + botGroupList.getFinishAmount() + "\n" + "交易中:" + botGroupList.getTrandPendingAmount() + "\n" +
+                "剩下可报备金额:" + botGroupList.getBalance());
+        return sendMessage;
     }
 
     private void insertOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
