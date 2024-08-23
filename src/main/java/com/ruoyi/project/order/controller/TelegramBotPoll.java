@@ -433,15 +433,12 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         InlineKeyboardButton button3 = new InlineKeyboardButton();
         InlineKeyboardButton button4 = new InlineKeyboardButton();
-        button1.setText("1");
-        button1.setCallbackData("button1");
-        button1.setText("1");
         button2.setCallbackData("button2");
-        button2.setText("1");
+        button2.setText("2");
         button3.setCallbackData("button3");
-        button3.setText("1");
+        button3.setText("3");
         button4.setCallbackData("button4");
-        button4.setText("1");
+        button4.setText("4");
         button1.setText("1");
         button1.setCallbackData("button1");
         row.add(button1);
