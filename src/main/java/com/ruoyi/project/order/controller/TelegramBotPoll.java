@@ -1,6 +1,5 @@
 package com.ruoyi.project.order.controller;
 
-import com.ruoyi.common.utils.DateTimeUtil;
 import com.ruoyi.common.utils.OrderNoGenerator;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bot.SendUtils;
@@ -17,29 +16,21 @@ import com.ruoyi.project.user.mapper.BotUserListMapper;
 import com.ruoyi.project.user.service.IBotUserListService;
 import lombok.extern.log4j.Log4j2;
 import org.jetbrains.annotations.NotNull;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Chat;
 import org.telegram.telegrambots.meta.api.objects.Update;
-import org.telegram.telegrambots.meta.api.objects.User;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
-import javax.swing.text.html.HTML;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -98,7 +89,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                 try {
                     InlineKeyboardMarkup inlineKeyboardMarkup = caleTemplate(messageId);
                     execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
-                    //取消订单
+                    //取消订单 修改订单状态已取消
                     updateOrderInfo(update, botOrderList, text);
                 } catch (TelegramApiException e) {
                     log.info("信息回调成功：{}", e.getMessage());
@@ -164,6 +155,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "交易金额：100u\n" +
                             "订单完成时间：1天");
                     execute(sendMessage);
+
                 }
                 //获取报备用户名称
                 BotUserList botUserList2 = null;
