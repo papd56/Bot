@@ -79,7 +79,10 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             if (callbackData.equalsIgnoreCase("button1")) {
                 InlineKeyboardMarkup inlineKeyboardMarkup = orderFinsh(messageId);
                 try {
-                    execute(SendUtils.sendMessageInit2(chatId, text, inlineKeyboardMarkup));
+                    String texts = update.getCallbackQuery().getFrom().getUserName();
+                    String replace = texts.replace("@", "");
+                    String replace1 = text.replace(replace, "******");
+                    execute(SendUtils.sendMessageInit2(chatId, replace1, inlineKeyboardMarkup));
                     updateOrderFinsh(update, botOrderList, text);
                 } catch (TelegramApiException e) {
                     log.info("报备信息异常: {}", e.getMessage());
@@ -198,7 +201,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     }
                     BotOrderList botOrderList1 = new BotOrderList();
                     botOrderList1.setTransactionAmount(BigDecimal.ZERO);
-                    insertOrderInfo(update, botOrderList1, messagTexts);
+//                    insertOrderInfo(update, botOrderList1, messagTexts);
                     insertOrderInfo(update, botOrderList, messageText);
                 }
 
@@ -223,10 +226,15 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     }
                     if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
                         Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
+                        String text = update.getMessage().getChat().getUserName();
+                        String replace = text.replace("@", "");
+                        assert o != null;
+                        String replace1 = o.toString().replace(replace, "******");
+
                         InlineKeyboardMarkup markup = reportCompleted(messageId);
                         if (botUserList1 != null) {
                             //取出来当前发送消息的群组id
-                            execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), o.toString(), markup));
+                            execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), replace1, markup));
                         }
                     }
                 }
