@@ -58,13 +58,15 @@ public class BotOrderList extends BaseEntity {
      */
     @Excel(name = "交易时间")
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private Date tradeTime;
+    private String tradeTime;
 
     /**
      * 创建时间
      */
     @Excel(name = "创建时间")
     private Date createTime;
+
+    private String orderNumber;
 
     @Override
     public Date getCreateTime() {

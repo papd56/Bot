@@ -53,5 +53,13 @@ public enum OrderStatus {
         }
         return null;
     }
+    public static String getDesc(int code) {
+        for (OrderStatus orderStatus:OrderStatus.values()){
+            if (orderStatus.code == code){
+                return orderStatus.getDesc();
+            }
+        }
+        return null;
+    }
 
 }

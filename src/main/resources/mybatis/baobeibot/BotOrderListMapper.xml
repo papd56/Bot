@@ -12,6 +12,7 @@
         <result property="initiatorReportUser" column="Initiator_report_user"/>
         <result property="tradeTime" column="trade_time"/>
         <result property="orderStatus" column="order_status"/>
+        <result property="orderNumber" column="order_number"/>
         <result property="createTime" column="create_time"/>
         <result property="updateTime" column="update_time"/>
     </resultMap>
@@ -24,6 +25,7 @@
                Initiator_report_user,
                trade_time,
                order_status,
+               order_number,
                create_time,
                update_time
         from bot_order_list
@@ -37,6 +39,9 @@
             <if test="initiatorReportUser != null  and initiatorReportUser != ''">and Initiator_report_user =
                 #{initiatorReportUser}
             </if>
+            <if test="orderNumber != null  and orderNumber != ''">and order_number =
+                #{orderNumber}
+            </if>
             <if test="tradeTime != null  and tradeTime != ''">and trade_time = #{tradeTime}</if>
             <if test="orderStatus != null ">and order_status = #{orderStatus}</if>
         </where>
@@ -45,6 +50,16 @@
     <select id="selectBotOrderListById" parameterType="Long" resultMap="BotOrderListResult">
         <include refid="selectBotOrderListVo"/>
         where id = #{id}
+    </select>
+    <select id="selectByNameList" resultMap="BotOrderListResult"
+            parameterType="java.lang.String">
+        <include refid="selectBotOrderListVo"/>
+        where trade_user = #{userName}
+    </select>
+    <select id="selectByOrderNum" resultMap="BotOrderListResult"
+            parameterType="java.lang.String">
+        <include refid="selectBotOrderListVo"/>
+        where trade_user = #{userName} and order_number = #{orderNumber}
     </select>
 
     <insert id="insertBotOrderList" parameterType="BotOrderList" useGeneratedKeys="true" keyProperty="id">
@@ -56,6 +71,7 @@
             <if test="initiatorReportUser != null">Initiator_report_user,</if>
             <if test="tradeTime != null">trade_time,</if>
             <if test="orderStatus != null">order_status,</if>
+            <if test="orderNumber != null">order_number,</if>
             <if test="createTime != null">create_time,</if>
             <if test="updateTime != null">update_time,</if>
         </trim>
@@ -66,6 +82,7 @@
             <if test="initiatorReportUser != null">#{initiatorReportUser},</if>
             <if test="tradeTime != null">#{tradeTime},</if>
             <if test="orderStatus != null">#{orderStatus},</if>
+            <if test="orderNumber != null">#{orderNumber},</if>
             <if test="createTime != null">#{createTime},</if>
             <if test="updateTime != null">#{updateTime},</if>
         </trim>
@@ -80,6 +97,7 @@
             <if test="initiatorReportUser != null">Initiator_report_user = #{initiatorReportUser},</if>
             <if test="tradeTime != null">trade_time = #{tradeTime},</if>
             <if test="orderStatus != null">order_status = #{orderStatus},</if>
+            <if test="orderNumber != null">order_number = #{orderNumber},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
         </trim>
