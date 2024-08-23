@@ -36,6 +36,10 @@ public interface BotOrderListMapper
      */
     public int insertBotOrderList(BotOrderList botOrderList);
 
+    List<BotOrderList> selectByNameList(String userName);
+
+    BotOrderList selectByOrderNum(String userName,String orderNumber);
+
     /**
      * 修改订单列
      *

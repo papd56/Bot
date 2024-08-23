@@ -66,6 +66,8 @@ public class BotOrderList extends BaseEntity {
     @Excel(name = "创建时间")
     private Date createTime;
 
+    private String orderNumber;
+
     @Override
     public Date getCreateTime() {
         return createTime;

@@ -1,6 +1,7 @@
 package com.ruoyi.project.order.controller;
 
 import com.ruoyi.common.utils.DateTimeUtil;
+import com.ruoyi.common.utils.OrderNoGenerator;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.common.RedisConstantKey;
@@ -9,6 +10,7 @@ import com.ruoyi.project.group.domain.BotGroupList;
 import com.ruoyi.project.group.mapper.BotGroupListMapper;
 import com.ruoyi.project.group.service.IBotGroupListService;
 import com.ruoyi.project.order.domain.BotOrderList;
+import com.ruoyi.project.order.mapper.BotOrderListMapper;
 import com.ruoyi.project.order.service.IBotOrderListService;
 import com.ruoyi.project.user.domain.BotUserList;
 import com.ruoyi.project.user.mapper.BotUserListMapper;
@@ -30,12 +32,14 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
+import javax.swing.text.html.HTML;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -53,6 +57,9 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
 
     @Autowired
     private BotGroupListMapper botGroupListMapper;
+
+    @Autowired
+    private BotOrderListMapper botOrderListMapper;
 
     @Autowired
     private IBotUserListService iBotUserListService;
@@ -157,7 +164,6 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "交易金额：100u\n" +
                             "订单完成时间：1天");
                     execute(sendMessage);
-                    insertOrderInfo(update, botOrderList, sendMessage.getText());
                 }
                 //获取报备用户名称
                 BotUserList botUserList2 = null;
@@ -214,15 +220,52 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     execute(sendMessage);
                 }
 
+                //我的订单 指令
+                if (messageText.equalsIgnoreCase("我的订单")) {
+                    String userName = update.getMessage().getFrom().getUserName();
+                    Long groupId = update.getMessage().getChat().getId();
+                    BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList1.getGroupId(), userName);
+                    SendMessage sendMessage = myOrder(groupId, botGroupList);
+                    execute(sendMessage);
+                    //根据用户名查询当前用户的所有订单
+                    InlineKeyboardMarkup inlineKeyboardMarkup = myOrder();
+                    List<BotOrderList> botOrderLists = botOrderListMapper.selectByNameList(userName);
+                    for (BotOrderList botOrderList1 : botOrderLists) {
+                        SendMessage sendMessageList = myOrderList(groupId, botGroupList, botOrderList1, inlineKeyboardMarkup);
+                        execute(sendMessageList);
+                    }
+                }
+                //我的报备 指令
+                if (messageText.equalsIgnoreCase("我的报备")) {
+                    String userName = update.getMessage().getFrom().getUserName();
+                    Long groupId = update.getMessage().getChat().getId();
+                    BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList1.getGroupId(), userName);
+                    //根据用户名查询当前用户的所有订单
+                    List<BotOrderList> botOrderLists = botOrderListMapper.selectByNameList(userName);
+                    for (BotOrderList botOrderList1 : botOrderLists) {
+                        SendMessage sendMessageList = myReport(groupId, botGroupList, botOrderList1);
+                        execute(sendMessageList);
+                    }
+                }
+
                 //如果回调确认消息 包含(/start) 则会执行这个命令
                 if (messageText.startsWith("/start")) {
                     BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
                     if (botUserList1 != null) {
                         String text = "报备完成";
                         execute(SendUtils.sendMessageInit(chatId, text));
+                        //修改订单状态为已完成
+//                        String userName = update.getMessage().getFrom().getUserName();
+//                        Long groupId = update.getMessage().getChat().getId();
+//                        BotUserList botUserList = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+//                        BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList.getGroupId(), userName);
+//                        iBotOrderListService.updateBotOrderList(botOrderList)
                     } else {
                         String text = "暂无权限";
                         execute(SendUtils.sendMessageInit(chatId, text));
+                        return;
                     }
                     if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
                         Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
@@ -232,10 +275,8 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                         String replace1 = o.toString().replace(replace, "******");
 
                         InlineKeyboardMarkup markup = reportCompleted(messageId);
-                        if (botUserList1 != null) {
-                            //取出来当前发送消息的群组id
-                            execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), replace1, markup));
-                        }
+                        //取出来当前发送消息的群组id
+                        execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), replace1, markup));
                     }
                 }
             } catch (TelegramApiException e) {
@@ -253,6 +294,31 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         return sendMessage;
     }
 
+    private static @NotNull SendMessage myOrder(long chatId, BotGroupList botGroupList) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText(botGroupList.getGroupNumber() + "\n"
+                + "交易完成金额:" + botGroupList.getFinishAmount() + "\n" + "交易中:" + botGroupList.getTrandPendingAmount() + "\n" +
+                "剩下可报备金额:" + botGroupList.getBalance());
+        return sendMessage;
+    }
+
+    private static @NotNull SendMessage myOrderList(long chatId, BotGroupList botGroupList, BotOrderList botOrderList, InlineKeyboardMarkup inlineKeyboardMarkup) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+//        sendMessage.setReplyMarkup(inlineKeyboardMarkup);
+        sendMessage.setParseMode("HTML");
+        sendMessage.setText(botGroupList.getGroupNumber() + "订单" + "交易方@" + botOrderList.getTradeUser() + "金额" + botOrderList.getTransactionAmount() + OrderStatus.getDesc(botOrderList.getOrderStatus()));
+        return sendMessage;
+    }
+
+    private static @NotNull SendMessage myReport(long chatId, BotGroupList botGroupList, BotOrderList botOrderList) {
+        SendMessage sendMessage = new SendMessage();
+        sendMessage.setChatId(chatId);
+        sendMessage.setText("公群" + botGroupList.getGroupNumber() + "订单" + botOrderList.getOrderNumber() + "金额" + botOrderList.getTransactionAmount() + OrderStatus.getDesc(botOrderList.getOrderStatus()));
+        return sendMessage;
+    }
+
     private void insertOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
         SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         Date date = new Date();
@@ -264,6 +330,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CONFIRMED.getCode());
         botOrderList.setCreateTime(new Date());
+        botOrderList.setOrderNumber(OrderNoGenerator.generateOrderNo());
         iBotOrderListService.insertBotOrderList(botOrderList);
     }
 
@@ -345,6 +412,49 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
 
     //通知报备群 订单完成
     private InlineKeyboardMarkup orderFinsh(Integer messageId) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        button1.setText("订单完成");
+        button1.setCallbackData("button1");
+        row.add(button1);
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    //指令 我的订单
+    private InlineKeyboardMarkup myOrder() {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+        List<InlineKeyboardButton> row = new ArrayList<>();
+        InlineKeyboardButton button1 = new InlineKeyboardButton();
+        InlineKeyboardButton button2 = new InlineKeyboardButton();
+        InlineKeyboardButton button3 = new InlineKeyboardButton();
+        InlineKeyboardButton button4 = new InlineKeyboardButton();
+        button1.setText("1");
+        button1.setCallbackData("button1");
+        button1.setText("1");
+        button2.setCallbackData("button2");
+        button2.setText("1");
+        button3.setCallbackData("button3");
+        button3.setText("1");
+        button4.setCallbackData("button4");
+        button4.setText("1");
+        button1.setText("1");
+        button1.setCallbackData("button1");
+        row.add(button1);
+        row.add(button2);
+        row.add(button3);
+        row.add(button4);
+        rows.add(row);
+        markup.setKeyboard(rows);
+        return markup;
+    }
+
+    //指令 我的报备
+    private InlineKeyboardMarkup myReport() {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         List<List<InlineKeyboardButton>> rows = new ArrayList<>();
         List<InlineKeyboardButton> row = new ArrayList<>();
