@@ -1,6 +1,8 @@
 package com.ruoyi.project.bot;
 
 import com.ruoyi.framework.aspectj.lang.annotation.Anonymous;
+import com.ruoyi.project.bot.group.domain.BotGroup;
+import com.ruoyi.project.bot.group.service.IBotGroupService;
 import com.ruoyi.project.bot.promote.domain.BotPromote;
 import com.ruoyi.project.bot.promote.service.IBotPromoteService;
 import com.ruoyi.project.bot.user.domain.BotUser;
@@ -25,10 +27,13 @@ public class RedisCacheController
     private RedisCacheService redisCacheService;
 
     @Autowired
-    private IBotUserService botUserService;
+    private IBotGroupService botGroupService;
 
     @Autowired
     private IBotPromoteService botPromoteService;
+
+    @Autowired
+    private IBotUserService botUserService;
 
     /**
      * 查询用户列表和推广指令列表并缓存
@@ -38,11 +43,14 @@ public class RedisCacheController
     @ResponseBody
     public void list()
     {
-        botUserService.selectBotUserList(new BotUser()).forEach(botUser -> {
-            redisCacheService.botUser(botUser);
+        botGroupService.selectBotGroupList(new BotGroup()).forEach(botGroup -> {
+            redisCacheService.botGroup(botGroup);
         });
         botPromoteService.selectBotPromoteList(new BotPromote()).forEach(botPromote -> {
             redisCacheService.botPromote(botPromote);
+        });
+        botUserService.selectBotUserList(new BotUser()).forEach(botUser -> {
+            redisCacheService.botUser(botUser);
         });
     }
 }

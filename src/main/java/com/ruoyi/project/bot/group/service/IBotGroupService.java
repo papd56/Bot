@@ -7,7 +7,7 @@ import com.ruoyi.project.bot.group.domain.BotGroup;
  * 群组管理Service接口
  * 
  * @author ruoyi
- * @date 2024-08-14
+ * @date 2024-08-22
  */
 public interface IBotGroupService 
 {

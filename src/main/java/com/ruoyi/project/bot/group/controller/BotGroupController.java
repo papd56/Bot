@@ -1,27 +1,29 @@
 package com.ruoyi.project.bot.group.controller;
 
-import com.ruoyi.common.utils.poi.ExcelUtil;
+import java.util.List;
+
 import com.ruoyi.framework.aspectj.lang.annotation.Anonymous;
-import com.ruoyi.framework.aspectj.lang.annotation.Log;
-import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
-import com.ruoyi.framework.web.controller.BaseController;
-import com.ruoyi.framework.web.domain.AjaxResult;
-import com.ruoyi.framework.web.page.TableDataInfo;
-import com.ruoyi.project.bot.group.domain.BotGroup;
-import com.ruoyi.project.bot.group.service.IBotGroupService;
+import com.ruoyi.project.bot.RedisCacheService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import com.ruoyi.framework.aspectj.lang.annotation.Log;
+import com.ruoyi.framework.aspectj.lang.enums.BusinessType;
+import com.ruoyi.project.bot.group.domain.BotGroup;
+import com.ruoyi.project.bot.group.service.IBotGroupService;
+import com.ruoyi.framework.web.controller.BaseController;
+import com.ruoyi.framework.web.domain.AjaxResult;
+import com.ruoyi.common.utils.poi.ExcelUtil;
+import com.ruoyi.framework.web.page.TableDataInfo;
 
 /**
  * 群组管理Controller
  * 
  * @author ruoyi
- * @date 2024-08-14
+ * @date 2024-08-22
  */
 @Controller
 @RequestMapping("/bot/group")
@@ -31,6 +33,12 @@ public class BotGroupController extends BaseController
 
     @Autowired
     private IBotGroupService botGroupService;
+
+    @Autowired
+    private RedisCacheService redisCacheService;
+
+    @Autowired
+    private RedisTemplate<String, Object> redisTemplate;
 
     @RequiresPermissions("bot:group:view")
     @GetMapping()
@@ -84,6 +92,7 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public AjaxResult addSave(BotGroup botGroup)
     {
+        redisCacheService.botGroup(botGroup);
         return toAjax(botGroupService.insertBotGroup(botGroup));
     }
 
@@ -95,7 +104,8 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public int addGroup(@RequestBody BotGroup botGroup)
     {
-        if (botGroupService.selectBotGroupList(botGroup).isEmpty()) {
+        if (Boolean.FALSE.equals(redisTemplate.hasKey("group:"+botGroup.getGroupId()))) {
+            redisCacheService.botGroup(botGroup);
             return botGroupService.insertBotGroup(botGroup);
         }
         return 0;
@@ -122,6 +132,7 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public AjaxResult editSave(BotGroup botGroup)
     {
+        redisCacheService.botGroup(botGroup);
         return toAjax(botGroupService.updateBotGroup(botGroup));
     }
 
@@ -133,10 +144,7 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public int editGroup(@RequestBody BotGroup botGroup)
     {
-        String groupName = botGroup.getGroupName();
-        botGroup.setGroupName("");
-        botGroup.setId(botGroupService.selectBotGroupList(botGroup).get(0).getId());
-        botGroup.setGroupName(groupName);
+        redisCacheService.botGroup(botGroup);
         return botGroupService.updateBotGroup(botGroup);
     }
 

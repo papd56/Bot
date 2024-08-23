@@ -12,7 +12,7 @@ import com.ruoyi.common.utils.text.Convert;
  * 群组管理Service业务层处理
  * 
  * @author ruoyi
- * @date 2024-08-14
+ * @date 2024-08-22
  */
 @Service
 public class BotGroupServiceImpl implements IBotGroupService 

@@ -1,5 +1,6 @@
 package com.ruoyi.project.bot;
 
+import com.ruoyi.project.bot.group.domain.BotGroup;
 import com.ruoyi.project.bot.promote.domain.BotPromote;
 import com.ruoyi.project.bot.user.domain.BotUser;
 import org.slf4j.Logger;
@@ -51,16 +52,20 @@ public class RedisCacheService {
         }
     }
 
-    public void botUser(BotUser botUser) {
-        setWithRetry("user:"+botUser.getUserName(), botUser);
-        if ("1".equals(botUser.getStatus())) {
-            setWithRetry("admin:"+botUser.getUserId(), botUser);
-        }
+    public void botGroup(BotGroup botGroup) {
+        setWithRetry("group:"+botGroup.getGroupId(), botGroup);
     }
 
     public void botPromote(BotPromote botPromote) {
         if ("1".equals(botPromote.getStatus())) {
             setWithRetry("promote:"+botPromote.getCommand(), botPromote);
+        }
+    }
+
+    public void botUser(BotUser botUser) {
+        setWithRetry("user:"+botUser.getUserName(), botUser);
+        if ("1".equals(botUser.getStatus())) {
+            setWithRetry("admin:"+botUser.getUserId(), botUser);
         }
     }
 }

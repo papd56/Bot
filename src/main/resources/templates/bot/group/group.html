@@ -19,8 +19,20 @@
                                 <input type="text" name="groupId"/>
                             </li>
                             <li>
-                                <label>群名称：</label>
+                                <label>公群名称：</label>
                                 <input type="text" name="groupName"/>
+                            </li>
+                            <li>
+                                <label>公群老板：</label>
+                                <input type="text" name="groupBoss"/>
+                            </li>
+                            <li>
+                                <label>开启担保时间：</label>
+                                <input type="text" class="time-input" placeholder="请选择开启担保时间" name="guaranteeOpenTime"/>
+                            </li>
+                            <li>
+                                <label>关闭担保时间：</label>
+                                <input type="text" class="time-input" placeholder="请选择关闭担保时间" name="guaranteeCloseTime"/>
                             </li>
                             <li>
                                 <a class="btn btn-primary btn-rounded btn-sm" onclick="$.table.search()"><i class="fa fa-search"></i>&nbsp;搜索</a>
@@ -69,7 +81,7 @@
                 },
                 {
                     field: 'id',
-                    title: '主键',
+                    title: '',
                     visible: false
                 },
                 {
@@ -82,7 +94,30 @@
                 },
                 {
                     field: 'groupName',
-                    title: '群名称'
+                    title: '公群名称'
+                },
+                {
+                    field: 'groupBoss',
+                    title: '公群老板'
+                },
+                {
+                    field: 'groupSalesman',
+                    title: '公群业务员',
+                    formatter: function(value, row, index) {
+                        return '<textarea readonly style="border: none">' + (value == null ? '':value) + '</textarea>';
+                    }
+                },
+                {
+                    field: 'guaranteeOpenTime',
+                    title: '开启担保时间'
+                },
+                {
+                    field: 'guaranteeCloseTime',
+                    title: '关闭担保时间'
+                },
+                {
+                    field: 'groupWelcome',
+                    title: '群欢迎语'
                 },
                 {
                     title: '操作',
