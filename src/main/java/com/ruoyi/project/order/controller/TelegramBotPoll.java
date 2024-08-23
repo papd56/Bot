@@ -1,5 +1,6 @@
 package com.ruoyi.project.order.controller;
 
+import com.ruoyi.common.utils.DateTimeUtil;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bot.SendUtils;
 import com.ruoyi.project.common.RedisConstantKey;
@@ -30,6 +31,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKe
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -243,9 +246,13 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
     }
 
     private void insertOrderInfo(Update update, BotOrderList botOrderList, String messagTexts) {
+        SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+        // 格式化日期为字符串
+        String formattedDate = formatter.format(date);
         botOrderList.setTradeInfo(messagTexts);
         botOrderList.setTradeUser(update.getMessage().getChat().getUserName());
-        botOrderList.setTradeTime(new Date());
+        botOrderList.setTradeTime(formattedDate);
         botOrderList.setInitiatorReportUser(update.getMessage().getFrom().getFirstName());
         botOrderList.setOrderStatus(OrderStatus.CONFIRMED.getCode());
         botOrderList.setCreateTime(new Date());
