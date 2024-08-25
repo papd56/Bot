@@ -3,6 +3,11 @@ package com.ruoyi.project.order.controller;
 import com.ruoyi.common.utils.OrderNoGenerator;
 import com.ruoyi.common.utils.StringUtils;
 import com.ruoyi.common.utils.bot.SendUtils;
+import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.group.GetChatMember;
+import org.telegram.telegrambots.meta.api.objects.ChatMember;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import com.ruoyi.project.common.RedisConstantKey;
 import com.ruoyi.project.enu.OrderStatus;
 import com.ruoyi.project.group.domain.BotGroupList;
@@ -20,11 +25,16 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.groupadministration.GetChatMember;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.User;
+import org.telegram.telegrambots.meta.api.objects.chatmember.ChatMember;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
@@ -138,143 +148,158 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             }
 
         }
+
+
         if (update.hasMessage() && update.getMessage().hasText()) {
-            String messageText = update.getMessage().getText();
-            Integer messageId = update.getMessage().getMessageId();
-            long chatId = update.getMessage().getChatId();
-            try {
-                if (messageText.equals("./start")) {
-                    execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
-                }
-                // 处理用户消息
-                if ("报备".equals(messageText)) {
-                    SendMessage sendMessage = new SendMessage();
-                    sendMessage.setChatId(chatId);
-                    sendMessage.setText("报备模板中必须包含: \n" +
-                            "交易方对接人：@hwdb\n" +
-                            "交易金额：100u\n" +
-                            "订单完成时间：1天");
-                    execute(sendMessage);
-
-                }
-                //获取报备用户名称
-                BotUserList botUserList2 = null;
-                if (messageText.contains("地区") || messageText.contains("地址")
-                        || messageText.contains("交易金额") || messageText.contains("交易方对接人")
-                        || messageText.contains("客户结算完整地址")) {
-                    if (!StringUtils.isEmpty(update.getMessage().getEntities().get(0).getText())) {
-                        String userName = update.getMessage().getEntities().get(0).getText();
-                        String replace = userName.replace("@", "");
-                        botUserList2 = botUserListMapper.selectByName(replace);
+            // 在超级群组中，可以获取更多的用户信息
+            User user = update.getMessage().getFrom();
+            if (this.isAdministratorOrCreator(update.getMessage().getChatId(), user.getId())) {
+                String messageText = update.getMessage().getText();
+                Integer messageId = update.getMessage().getMessageId();
+                long chatId = update.getMessage().getChatId();
+                try {
+                    if (messageText.equals("./start")) {
+                        execute(SendUtils.sendMessageInit(chatId, "欢迎使用报备机器人"));
                     }
-                    //将发送的消息存入到 缓存redis
-                    redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
-                    // 创建一个带有按钮的键盘
-                    InlineKeyboardMarkup markup = createKeyboard(messageId);
-                    if (botUserList2 != null) {
-                        String text = update.getMessage().getEntities().get(0).getText();
-                        String replace = text.replace("@", "");
-                        String replace1 = messageText.replace(replace, "******");
-                        execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), replace1, markup));
-                        //消息通知用户报备成功
-                        InlineKeyboardMarkup success = reportCompleted(messageId);
-                        execute(SendUtils.sendMessageInit(botUserList2.getTgUnqiueId(), messageText, success));
-                    } else {
+                    // 处理用户消息
+                    if ("报备".equals(messageText)) {
                         SendMessage sendMessage = new SendMessage();
-                        sendMessage.setText("报备用户不存在");
                         sendMessage.setChatId(chatId);
+                        sendMessage.setText("报备模板中必须包含: \n" +
+                                "交易方对接人：@hwdb\n" +
+                                "交易金额：100u\n" +
+                                "订单完成时间：1天");
                         execute(sendMessage);
-                        return;
                     }
+                    //获取报备用户名称
+                    BotUserList botUserList2 = null;
+                    if (messageText.contains("地区") || messageText.contains("地址")
+                            || messageText.contains("交易金额") || messageText.contains("交易方对接人")
+                            || messageText.contains("客户结算完整地址")) {
+                        if (!StringUtils.isEmpty(update.getMessage().getEntities().get(0).getText())) {
+                            String userName = update.getMessage().getEntities().get(0).getText();
+                            String replace = userName.replace("@", "");
+                            botUserList2 = botUserListMapper.selectByName(replace);
+                        }
+                        //将发送的消息存入到 缓存redis
+                        redisTemplate.opsForValue().set(RedisConstantKey.AUDITVERIFICATION, messageText);
+                        // 创建一个带有按钮的键盘
+                        InlineKeyboardMarkup markup = createKeyboard(messageId);
+                        if (botUserList2 != null) {
+                            String text = update.getMessage().getEntities().get(0).getText();
+                            String replace = text.replace("@", "");
+                            String replace1 = messageText.replace(replace, "******");
+                            execute(SendUtils.sendMessageInit(botUserList2.getGroupId(), replace1, markup));
+                            //消息通知用户报备成功
+                            InlineKeyboardMarkup success = reportCompleted(messageId);
+                            execute(SendUtils.sendMessageInit(botUserList2.getTgUnqiueId(), messageText, success));
+                        } else {
+                            SendMessage sendMessage = new SendMessage();
+                            sendMessage.setText("报备用户不存在");
+                            sendMessage.setChatId(chatId);
+                            execute(sendMessage);
+                            return;
+                        }
 
-                    String messagTexts = "发送成功，请在公群内查看";
-                    execute(SendUtils.sendMessageInit(chatId, messagTexts));
-                    // 正则表达式：匹配"交易金额:"后面的数字和"元"
-                    Pattern pattern = Pattern.compile("交易金额：(\\d+)");
-                    Matcher matcher = pattern.matcher(messageText);
-                    if (matcher.find()) {
-                        String amountStr = matcher.group(1);
-                        BigDecimal bigDecimal = new BigDecimal(amountStr);
-                        botOrderList.setTransactionAmount(bigDecimal);
-                    }
-                    BotOrderList botOrderList1 = new BotOrderList();
-                    botOrderList1.setTransactionAmount(BigDecimal.ZERO);
+                        String messagTexts = "发送成功，请在公群内查看";
+                        execute(SendUtils.sendMessageInit(chatId, messagTexts));
+                        // 正则表达式：匹配"交易金额:"后面的数字和"元"
+                        Pattern pattern = Pattern.compile("交易金额：(\\d+)");
+                        Matcher matcher = pattern.matcher(messageText);
+                        if (matcher.find()) {
+                            String amountStr = matcher.group(1);
+                            BigDecimal bigDecimal = new BigDecimal(amountStr);
+                            botOrderList.setTransactionAmount(bigDecimal);
+                        }
+                        BotOrderList botOrderList1 = new BotOrderList();
+                        botOrderList1.setTransactionAmount(BigDecimal.ZERO);
 //                    insertOrderInfo(update, botOrderList1, messagTexts);
-                    insertOrderInfo(update, botOrderList, messageText);
-                }
-
-                //如果请求是b0 操作则显示账单统计
-                if (messageText.equalsIgnoreCase("b0")) {
-                    String userName = update.getMessage().getFrom().getUserName();
-                    Long groupId = update.getMessage().getChat().getId();
-                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(groupId, userName);
-                    SendMessage sendMessage = getSendMessage(chatId, botGroupList);
-                    execute(sendMessage);
-                }
-
-                //我的订单 指令
-                if (messageText.equalsIgnoreCase("我的订单")) {
-                    String userName = update.getMessage().getFrom().getUserName();
-                    Long groupId = update.getMessage().getChat().getId();
-                    BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
-                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList1.getGroupId(), userName);
-                    SendMessage sendMessage = myOrder(groupId, botGroupList);
-                    execute(sendMessage);
-                    //根据用户名查询当前用户的所有订单
-                    InlineKeyboardMarkup inlineKeyboardMarkup = myOrder();
-                    List<BotOrderList> botOrderLists = botOrderListMapper.selectByNameList(userName);
-                    for (BotOrderList botOrderList1 : botOrderLists) {
-                        SendMessage sendMessageList = myOrderList(groupId, botGroupList, botOrderList1, inlineKeyboardMarkup);
-                        execute(sendMessageList);
+                        insertOrderInfo(update, botOrderList, messageText);
                     }
-                }
-                //我的报备 指令
-                if (messageText.equalsIgnoreCase("我的报备")) {
-                    String userName = update.getMessage().getFrom().getUserName();
-                    Long groupId = update.getMessage().getChat().getId();
-                    BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
-                    BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList1.getGroupId(), userName);
-                    //根据用户名查询当前用户的所有订单
-                    List<BotOrderList> botOrderLists = botOrderListMapper.selectByNameList(userName);
-                    for (BotOrderList botOrderList1 : botOrderLists) {
-                        SendMessage sendMessageList = myReport(groupId, botGroupList, botOrderList1);
-                        execute(sendMessageList);
-                    }
-                }
 
-                //如果回调确认消息 包含(/start) 则会执行这个命令
-                if (messageText.startsWith("/start")) {
-                    BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
-                    if (botUserList1 != null) {
-                        String text = "报备完成";
-                        execute(SendUtils.sendMessageInit(chatId, text));
-                        //修改订单状态为已完成
+                    //如果请求是b0 操作则显示账单统计
+                    if (messageText.equalsIgnoreCase("b0")) {
+                        String userName = update.getMessage().getFrom().getUserName();
+                        Long groupId = update.getMessage().getChat().getId();
+                        BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                        SendMessage sendMessage = getSendMessage(chatId, botGroupList);
+                        execute(sendMessage);
+                    }
+
+                    //我的订单 指令
+                    if (messageText.equalsIgnoreCase("我的订单")) {
+                        String userName = update.getMessage().getFrom().getUserName();
+                        Long groupId = update.getMessage().getChat().getId();
+                        BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                        BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList1.getGroupId(), userName);
+                        SendMessage sendMessage = myOrder(groupId, botGroupList);
+                        execute(sendMessage);
+                        //根据用户名查询当前用户的所有订单
+                        InlineKeyboardMarkup inlineKeyboardMarkup = myOrder();
+                        List<BotOrderList> botOrderLists = botOrderListMapper.selectByNameList(userName);
+                        for (BotOrderList botOrderList1 : botOrderLists) {
+                            SendMessage sendMessageList = myOrderList(groupId, botGroupList, botOrderList1, inlineKeyboardMarkup);
+                            execute(sendMessageList);
+                        }
+                    }
+                    //我的报备 指令
+                    if (messageText.equalsIgnoreCase("我的报备")) {
+                        String userName = update.getMessage().getFrom().getUserName();
+                        Long groupId = update.getMessage().getChat().getId();
+                        BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
+                        BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList1.getGroupId(), userName);
+                        //根据用户名查询当前用户的所有订单
+                        List<BotOrderList> botOrderLists = botOrderListMapper.selectByNameList(userName);
+                        for (BotOrderList botOrderList1 : botOrderLists) {
+                            SendMessage sendMessageList = myReport(groupId, botGroupList, botOrderList1);
+                            execute(sendMessageList);
+                        }
+                    }
+
+                    //如果回调确认消息 包含(/start) 则会执行这个命令
+                    if (messageText.startsWith("/start")) {
+                        BotUserList botUserList1 = botUserListMapper.selectBotGroupByIdAndUserName(update.getMessage().getFrom().getId(), update.getMessage().getFrom().getUserName());
+                        if (botUserList1 != null) {
+                            String text = "报备完成";
+                            execute(SendUtils.sendMessageInit(chatId, text));
+                            //修改订单状态为已完成
 //                        String userName = update.getMessage().getFrom().getUserName();
 //                        Long groupId = update.getMessage().getChat().getId();
 //                        BotUserList botUserList = botUserListMapper.selectBotGroupByIdAndUserName(groupId, userName);
 //                        BotGroupList botGroupList = botGroupListMapper.selectBotGroupByIdAndUserName(botUserList.getGroupId(), userName);
 //                        iBotOrderListService.updateBotOrderList(botOrderList)
-                    } else {
-                        String text = "暂无权限";
-                        execute(SendUtils.sendMessageInit(chatId, text));
-                        return;
-                    }
-                    if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
-                        Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
-                        String text = update.getMessage().getChat().getUserName();
-                        String replace = text.replace("@", "");
-                        assert o != null;
-                        String replace1 = o.toString().replace(replace, "******");
+                        } else {
+                            String text = "暂无权限";
+                            execute(SendUtils.sendMessageInit(chatId, text));
+                            return;
+                        }
+                        if (Boolean.TRUE.equals(redisTemplate.hasKey(RedisConstantKey.AUDITVERIFICATION))) {
+                            Object o = redisTemplate.opsForValue().get(RedisConstantKey.AUDITVERIFICATION);
+                            String text = update.getMessage().getChat().getUserName();
+                            String replace = text.replace("@", "");
+                            assert o != null;
+                            String replace1 = o.toString().replace(replace, "******");
 
-                        InlineKeyboardMarkup markup = reportCompleted(messageId);
-                        //取出来当前发送消息的群组id
-                        execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), replace1, markup));
+                            InlineKeyboardMarkup markup = reportCompleted(messageId);
+                            //取出来当前发送消息的群组id
+                            execute(SendUtils.sendMessageInit(botUserList1.getGroupId(), replace1, markup));
+                        }
                     }
+                } catch (TelegramApiException e) {
+                    log.info("机器人消息发送异常: {}", e.getMessage());
                 }
-            } catch (TelegramApiException e) {
-                log.info("机器人消息发送异常: {}", e.getMessage());
+            } else {
+                SendMessage sendMessage = new SendMessage();
+                sendMessage.setChatId(update.getMessage().getChatId());
+                sendMessage.setText("暂无权限");
+                try {
+                    execute(sendMessage);
+                } catch (TelegramApiException e) {
+                    log.info("暂无权限操作: {}", e.getMessage());
+                }
             }
         }
+
     }
 
     private static @NotNull SendMessage getSendMessage(long chatId, BotGroupList botGroupList) {
@@ -454,5 +479,20 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         rows.add(row);
         markup.setKeyboard(rows);
         return markup;
+    }
+
+
+    public boolean isAdministratorOrCreator(long chatId, long userId) {
+        try {
+            GetChatMember getChatMember = new GetChatMember();
+            getChatMember.setChatId(chatId);
+            getChatMember.setUserId(userId);
+            ChatMember chatMember = execute(getChatMember);
+            return chatMember.getStatus().equals("administrator")
+                    || chatMember.getStatus().equals("creator");
+        } catch (TelegramApiException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }
