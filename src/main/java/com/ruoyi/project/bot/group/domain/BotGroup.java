@@ -44,12 +44,12 @@ public class BotGroup extends BaseEntity
 
     /** 开启担保时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "开启担保时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @Excel(name = "开启担保时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
     private Date guaranteeOpenTime;
 
     /** 关闭担保时间 */
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "关闭担保时间", width = 30, dateFormat = "yyyy-MM-dd")
+    @Excel(name = "关闭担保时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
     private Date guaranteeCloseTime;
 
     /** 群欢迎语 */
