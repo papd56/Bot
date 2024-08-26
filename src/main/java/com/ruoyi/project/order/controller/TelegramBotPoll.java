@@ -105,6 +105,11 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
             //第一次进群初始化群组信息
             BotGroupList botGroupList = new BotGroupList();
             botGroupList.setGroupId(update.getMessage().getChat().getId());
+            if (isAdministratorOrCreator(update.getMessage().getChat().getId(), update.getMessage().getNewChatMembers().get(0).getId())) {
+                botGroupList.setIsNotManage(1L);
+            } else {
+                botGroupList.setIsNotManage(0L);
+            }
             botGroupList.setGroupName(update.getMessage().getChat().getTitle());
             botGroupList.setUserName(update.getMessage().getNewChatMembers().get(0).getUserName());
             botGroupList.setNickName(update.getMessage().getNewChatMembers().get(0).getFirstName());
