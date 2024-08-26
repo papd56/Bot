@@ -84,7 +84,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                     String replace = texts.replace("@", "");
                     String replace1 = text.replace(replace, "******");
                     execute(SendUtils.sendMessageInit2(chatId, replace1, inlineKeyboardMarkup));
-                    updateOrderFinsh(update, botOrderList, text);
+//                    updateOrderFinsh(update, botOrderList, text);
                 } catch (TelegramApiException e) {
                     log.info("报备信息异常: {}", e.getMessage());
                 }
