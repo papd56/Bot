@@ -13,7 +13,7 @@ import com.ruoyi.framework.web.domain.BaseEntity;
  * 群组管理对象 bot_group
  * 
  * @author ruoyi
- * @date 2024-08-22
+ * @date 2024-09-01
  */
 public class BotGroup extends BaseEntity
 {
@@ -30,6 +30,10 @@ public class BotGroup extends BaseEntity
     @Excel(name = "群组id")
     private String groupId;
 
+    /** 群组链接 */
+    @Excel(name = "群组链接")
+    private String groupUrl;
+
     /** 公群名称 */
     @Excel(name = "公群名称")
     private String groupName;
@@ -43,13 +47,13 @@ public class BotGroup extends BaseEntity
     private String groupSalesman;
 
     /** 开启担保时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "开启担保时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Excel(name = "开启担保时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date guaranteeOpenTime;
 
     /** 关闭担保时间 */
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    @Excel(name = "关闭担保时间", width = 30, dateFormat = "yyyy-MM-dd HH:mm:ss")
+    @JsonFormat(pattern = "yyyy-MM-dd")
+    @Excel(name = "关闭担保时间", width = 30, dateFormat = "yyyy-MM-dd")
     private Date guaranteeCloseTime;
 
     /** 群欢迎语 */
@@ -84,6 +88,16 @@ public class BotGroup extends BaseEntity
     public String getGroupId() 
     {
         return groupId;
+    }
+
+    public void setGroupUrl(String groupUrl) 
+    {
+        this.groupUrl = groupUrl;
+    }
+
+    public String getGroupUrl() 
+    {
+        return groupUrl;
     }
 
     public void setGroupName(String groupName) 

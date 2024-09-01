@@ -52,8 +52,26 @@ public class RedisCacheService {
         }
     }
 
+    public void setHashWithRetry(String key, String field, Object value) {
+        int retryCount = 0;
+        while (retryCount < 3) {
+            try {
+                redisTemplate.opsForHash().put(key, field, value.toString());
+                return;
+            } catch (Exception e) {
+                log.error("setWithRetry Exception:",e);
+                retryCount++;
+                try {
+                    Thread.sleep(1000); // 每次重试间隔1秒
+                } catch (InterruptedException ex) {
+                    log.error("setWithRetry InterruptedException:",ex);
+                }
+            }
+        }
+    }
+
     public void botGroup(BotGroup botGroup) {
-        setWithRetry("group:"+botGroup.getGroupId(), botGroup);
+        setHashWithRetry("group", botGroup.getGroupId(), botGroup);
     }
 
     public void botPromote(BotPromote botPromote) {

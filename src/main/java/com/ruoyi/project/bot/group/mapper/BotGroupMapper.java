@@ -7,7 +7,7 @@ import com.ruoyi.project.bot.group.domain.BotGroup;
  * 群组管理Mapper接口
  * 
  * @author ruoyi
- * @date 2024-08-22
+ * @date 2024-09-01
  */
 public interface BotGroupMapper 
 {

@@ -8,6 +8,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="id"    column="id"    />
         <result property="botId"    column="bot_id"    />
         <result property="groupId"    column="group_id"    />
+        <result property="groupUrl"    column="group_url"    />
         <result property="groupName"    column="group_name"    />
         <result property="groupBoss"    column="group_boss"    />
         <result property="groupSalesman"    column="group_salesman"    />
@@ -17,7 +18,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectBotGroupVo">
-        select id, bot_id, group_id, group_name, group_boss, group_salesman, guarantee_open_time, guarantee_close_time, group_welcome from bot_group
+        select id, bot_id, group_id, group_url, group_name, group_boss, group_salesman, guarantee_open_time, guarantee_close_time, group_welcome from bot_group
     </sql>
 
     <select id="selectBotGroupList" parameterType="BotGroup" resultMap="BotGroupResult">
@@ -25,12 +26,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <where>  
             <if test="botId != null  and botId != ''"> and bot_id = #{botId}</if>
             <if test="groupId != null  and groupId != ''"> and group_id = #{groupId}</if>
+            <if test="groupUrl != null  and groupUrl != ''"> and group_url = #{groupUrl}</if>
             <if test="groupName != null  and groupName != ''"> and group_name like concat('%', #{groupName}, '%')</if>
-            <if test="groupBoss != null  and groupBoss != ''"> and group_boss like concat('%', #{groupBoss}, '%')</if>
-            <if test="groupSalesman != null  and groupSalesman != ''"> and group_salesman like concat('%', #{groupSalesman}, '%')</if>
-            <if test="guaranteeOpenTime != null "> and guarantee_open_time &gt;= #{guaranteeOpenTime}</if>
-            <if test="guaranteeCloseTime != null "> and guarantee_close_time &lt;= #{guaranteeCloseTime}</if>
-            <if test="groupWelcome != null  and groupWelcome != ''"> and group_welcome like concat('%', #{groupWelcome}, '%')</if>
+            <if test="groupBoss != null  and groupBoss != ''"> and group_boss = #{groupBoss}</if>
+            <if test="groupSalesman != null  and groupSalesman != ''"> and group_salesman = #{groupSalesman}</if>
+            <if test="guaranteeOpenTime != null "> and guarantee_open_time = #{guaranteeOpenTime}</if>
+            <if test="guaranteeCloseTime != null "> and guarantee_close_time = #{guaranteeCloseTime}</if>
+            <if test="groupWelcome != null  and groupWelcome != ''"> and group_welcome = #{groupWelcome}</if>
         </where>
     </select>
     
@@ -42,8 +44,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <insert id="insertBotGroup" parameterType="BotGroup" useGeneratedKeys="true" keyProperty="id">
         insert into bot_group
         <trim prefix="(" suffix=")" suffixOverrides=",">
-            <if test="botId != null and botId != ''">bot_id,</if>
-            <if test="groupId != null and groupId != ''">group_id,</if>
+            <if test="botId != null">bot_id,</if>
+            <if test="groupId != null">group_id,</if>
+            <if test="groupUrl != null">group_url,</if>
             <if test="groupName != null and groupName != ''">group_name,</if>
             <if test="groupBoss != null">group_boss,</if>
             <if test="groupSalesman != null">group_salesman,</if>
@@ -52,8 +55,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="groupWelcome != null">group_welcome,</if>
          </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
-            <if test="botId != null and botId != ''">#{botId},</if>
-            <if test="groupId != null and groupId != ''">#{groupId},</if>
+            <if test="botId != null">#{botId},</if>
+            <if test="groupId != null">#{groupId},</if>
+            <if test="groupUrl != null">#{groupUrl},</if>
             <if test="groupName != null and groupName != ''">#{groupName},</if>
             <if test="groupBoss != null">#{groupBoss},</if>
             <if test="groupSalesman != null">#{groupSalesman},</if>
@@ -66,8 +70,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateBotGroup" parameterType="BotGroup">
         update bot_group
         <trim prefix="SET" suffixOverrides=",">
-            <if test="botId != null and botId != ''">bot_id = #{botId},</if>
-            <if test="groupId != null and groupId != ''">group_id = #{groupId},</if>
+            <if test="botId != null">bot_id = #{botId},</if>
+            <if test="groupId != null">group_id = #{groupId},</if>
+            <if test="groupUrl != null">group_url = #{groupUrl},</if>
             <if test="groupName != null and groupName != ''">group_name = #{groupName},</if>
             <if test="groupBoss != null">group_boss = #{groupBoss},</if>
             <if test="groupSalesman != null">group_salesman = #{groupSalesman},</if>

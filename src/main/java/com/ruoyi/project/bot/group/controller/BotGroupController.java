@@ -23,7 +23,7 @@ import com.ruoyi.framework.web.page.TableDataInfo;
  * 群组管理Controller
  * 
  * @author ruoyi
- * @date 2024-08-22
+ * @date 2024-09-01
  */
 @Controller
 @RequestMapping("/bot/group")
@@ -54,6 +54,19 @@ public class BotGroupController extends BaseController
     @PostMapping("/list")
     @ResponseBody
     public TableDataInfo list(BotGroup botGroup)
+    {
+        startPage();
+        List<BotGroup> list = botGroupService.selectBotGroupList(botGroup);
+        return getDataTable(list);
+    }
+
+    /**
+     * 查询群组管理列表
+     */
+    @Anonymous
+    @PostMapping("/groupList")
+    @ResponseBody
+    public TableDataInfo groupList(@RequestBody BotGroup botGroup)
     {
         startPage();
         List<BotGroup> list = botGroupService.selectBotGroupList(botGroup);
@@ -92,7 +105,6 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public AjaxResult addSave(BotGroup botGroup)
     {
-        redisCacheService.botGroup(botGroup);
         return toAjax(botGroupService.insertBotGroup(botGroup));
     }
 
@@ -132,7 +144,6 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public AjaxResult editSave(BotGroup botGroup)
     {
-        redisCacheService.botGroup(botGroup);
         return toAjax(botGroupService.updateBotGroup(botGroup));
     }
 
