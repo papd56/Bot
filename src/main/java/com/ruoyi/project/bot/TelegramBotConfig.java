@@ -1,6 +1,5 @@
 package com.ruoyi.project.bot;
 
-import com.ruoyi.project.order.controller.TelegramBotGarantee;
 import com.ruoyi.project.order.controller.TelegramBotPoll;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,14 +22,14 @@ public class TelegramBotConfig {
         return new TelegramBotPoll();
     }
 
-    @Bean
-    public TelegramBotGarantee telegramBotGarantee() {
-        return new TelegramBotGarantee();
-    }
+//    @Bean
+//    public TelegramBotGarantee telegramBotGarantee() {
+//        return new TelegramBotGarantee();
+//    }
 
     @PostConstruct
     public void registerBot() throws TelegramApiException {
         telegramBotsApi().registerBot(telegramBotPoll());
-        telegramBotsApi().registerBot(telegramBotGarantee());
+//        telegramBotsApi().registerBot(telegramBotGarantee());
     }
 }

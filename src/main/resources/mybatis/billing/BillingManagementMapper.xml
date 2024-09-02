@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.project.management.mapper.BillingManagementMapper">
+
+    <resultMap type="BillingManagement" id="BillingManagementResult">
+        <result property="id"    column="id"    />
+        <result property="amountReceived"    column="amount_received"    />
+        <result property="fixedRate"    column="fixed_rate"    />
+        <result property="createTime"    column="create_time"    />
+        <result property="orderInfo"    column="order_info"    />
+    </resultMap>
+
+    <sql id="selectBillingManagementVo">
+        select id, amount_received, fixed_rate, create_time, order_info
+        from billing_management
+    </sql>
+
+    <select id="selectBillingManagementList" parameterType="BillingManagement" resultMap="BillingManagementResult">
+        <include refid="selectBillingManagementVo"/>
+        <where>
+            <if test="amountReceived != null ">and amount_received = #{amountReceived}</if>
+            <if test="fixedRate != null ">and fixed_rate = #{fixedRate}</if>
+            <if test="startTime != null and startTime != '' ">and create_time &gt;= #{startTime}</if>
+            <if test="endTime != null and endTime != '' ">and create_time &lt;= #{endTime}</if>
+        </where>
+    </select>
+
+    <select id="selectBillingManagementById" parameterType="Long" resultMap="BillingManagementResult">
+        <include refid="selectBillingManagementVo"/>
+        where id = #{id}
+    </select>
+
+    <insert id="insertBillingManagement" parameterType="BillingManagement">
+        insert into billing_management
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="id != null">id,</if>
+            <if test="amountReceived != null">amount_received,</if>
+            <if test="fixedRate != null">fixed_rate,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="orderInfo != null">order_info,</if>
+         </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="id != null">#{id},</if>
+            <if test="amountReceived != null">#{amountReceived},</if>
+            <if test="fixedRate != null">#{fixedRate},</if>
+            <if test="createTime != null">now(),</if>
+            <if test="orderInfo != null">#{orderInfo},</if>
+         </trim>
+    </insert>
+
+    <update id="updateBillingManagement" parameterType="BillingManagement">
+        update billing_management
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="amountReceived != null">amount_received = #{amountReceived},</if>
+            <if test="fixedRate != null">fixed_rate = #{fixedRate},</if>
+            <if test="createTime != null">create_time = now(),</if>
+            <if test="orderInfo != null">order_info = #{orderInfo},</if>
+        </trim>
+        where id = #{id}
+    </update>
+
+    <delete id="deleteBillingManagementById" parameterType="Long">
+        delete from billing_management where id = #{id}
+    </delete>
+
+    <delete id="deleteBillingManagementByIds" parameterType="String">
+        delete from billing_management where id in
+        <foreach item="id" collection="array" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+</mapper>
