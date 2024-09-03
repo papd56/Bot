@@ -2,6 +2,7 @@ package com.ruoyi.project.system.user.controller;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -22,27 +23,24 @@ import com.ruoyi.framework.web.service.ConfigService;
 
 /**
  * 登录验证
- * 
+ *
  * @author ruoyi
  */
 @Controller
-public class LoginController extends BaseController
-{
+public class LoginController extends BaseController {
     /**
      * 是否开启记住我功能
      */
-    @Value("${shiro.rememberMe.enabled: false}")
+    @Value("${shiro.rememberMe.enabled: true}")
     private boolean rememberMe;
 
     @Autowired
     private ConfigService configService;
 
     @GetMapping("/login")
-    public String login(HttpServletRequest request, HttpServletResponse response, ModelMap mmap)
-    {
+    public String login(HttpServletRequest request, HttpServletResponse response, ModelMap mmap) {
         // 如果是Ajax请求，返回Json字符串。
-        if (ServletUtils.isAjaxRequest(request))
-        {
+        if (ServletUtils.isAjaxRequest(request)) {
             return ServletUtils.renderString(response, "{\"code\":\"1\",\"msg\":\"未登录或登录超时。请重新登录\"}");
         }
         // 是否开启记住我
@@ -54,20 +52,15 @@ public class LoginController extends BaseController
 
     @PostMapping("/login")
     @ResponseBody
-    public AjaxResult ajaxLogin(String username, String password, Boolean rememberMe)
-    {
+    public AjaxResult ajaxLogin(String username, String password, Boolean rememberMe) {
         UsernamePasswordToken token = new UsernamePasswordToken(username, password, rememberMe);
         Subject subject = SecurityUtils.getSubject();
-        try
-        {
+        try {
             subject.login(token);
             return success();
-        }
-        catch (AuthenticationException e)
-        {
+        } catch (AuthenticationException e) {
             String msg = "用户或密码错误";
-            if (StringUtils.isNotEmpty(e.getMessage()))
-            {
+            if (StringUtils.isNotEmpty(e.getMessage())) {
                 msg = e.getMessage();
             }
             return error(msg);
@@ -75,8 +68,7 @@ public class LoginController extends BaseController
     }
 
     @GetMapping("/unauth")
-    public String unauth()
-    {
+    public String unauth() {
         return "error/unauth";
     }
 }

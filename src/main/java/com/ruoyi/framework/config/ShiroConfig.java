@@ -43,7 +43,7 @@ import java.util.Map;
 
 /**
  * 权限配置加载
- * 
+ *
  * @author ruoyi
  */
 @Configuration
@@ -302,6 +302,7 @@ public class ShiroConfig
         // 不需要拦截的访问
         filterChainDefinitionMap.put("/login", "anon,captchaValidate");
         filterChainDefinitionMap.put("/redisCache/**", "anon");
+        filterChainDefinitionMap.put("/billing/management/add", "anon");
         // 注册相关
         filterChainDefinitionMap.put("/register", "anon,captchaValidate");
         // 系统权限列表
