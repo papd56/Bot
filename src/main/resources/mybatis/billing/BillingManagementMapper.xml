@@ -41,14 +41,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="fixedRate != null">fixed_rate,</if>
             <if test="createTime != null">create_time,</if>
             <if test="orderInfo != null">order_info,</if>
-         </trim>
+        </trim>
         <trim prefix="values (" suffix=")" suffixOverrides=",">
             <if test="id != null">#{id},</if>
             <if test="amountReceived != null">#{amountReceived},</if>
             <if test="fixedRate != null">#{fixedRate},</if>
-            <if test="createTime != null">now(),</if>
+            <if test="createTime != null">#{createTime},</if>
             <if test="orderInfo != null">#{orderInfo},</if>
-         </trim>
+        </trim>
     </insert>
 
     <update id="updateBillingManagement" parameterType="BillingManagement">
