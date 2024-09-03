@@ -35,6 +35,25 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="groupWelcome != null  and groupWelcome != ''"> and group_welcome = #{groupWelcome}</if>
         </where>
     </select>
+
+    <select id="selectBotGroupListByGroupName" parameterType="BotGroup" resultMap="BotGroupResult">
+        <include refid="selectBotGroupVo"/>
+        <where>
+            <if test="botId != null  and botId != ''"> and bot_id = #{botId}</if>
+            <if test="groupId != null  and groupId != ''"> and group_id = #{groupId}</if>
+            <if test="groupUrl != null  and groupUrl != ''"> and group_url = #{groupUrl}</if>
+            <if test="groupName != null  and groupName != ''">
+                <foreach collection="groupName.split(',')" item="groupNamePart" open="(" separator=" OR " close=")">
+                    group_name LIKE CONCAT('%', #{groupNamePart}, '%')
+                </foreach>
+            </if>
+            <if test="groupBoss != null  and groupBoss != ''"> and group_boss = #{groupBoss}</if>
+            <if test="groupSalesman != null  and groupSalesman != ''"> and group_salesman = #{groupSalesman}</if>
+            <if test="guaranteeOpenTime != null "> and guarantee_open_time = #{guaranteeOpenTime}</if>
+            <if test="guaranteeCloseTime != null "> and guarantee_close_time = #{guaranteeCloseTime}</if>
+            <if test="groupWelcome != null  and groupWelcome != ''"> and group_welcome = #{groupWelcome}</if>
+        </where>
+    </select>
     
     <select id="selectBotGroupById" parameterType="Long" resultMap="BotGroupResult">
         <include refid="selectBotGroupVo"/>

@@ -2,6 +2,7 @@ package com.ruoyi.project.bot.group.controller;
 
 import java.util.List;
 
+import com.ruoyi.common.utils.ServletUtils;
 import com.ruoyi.framework.aspectj.lang.annotation.Anonymous;
 import com.ruoyi.project.bot.RedisCacheService;
 import org.apache.shiro.authz.annotation.RequiresPermissions;
@@ -18,6 +19,8 @@ import com.ruoyi.framework.web.controller.BaseController;
 import com.ruoyi.framework.web.domain.AjaxResult;
 import com.ruoyi.common.utils.poi.ExcelUtil;
 import com.ruoyi.framework.web.page.TableDataInfo;
+
+import static com.ruoyi.framework.web.page.TableSupport.PAGE_NUM;
 
 /**
  * 群组管理Controller
@@ -68,7 +71,9 @@ public class BotGroupController extends BaseController
     @ResponseBody
     public TableDataInfo groupList(@RequestBody BotGroup botGroup)
     {
-        startPage();
+        if (botGroup != null && botGroup.getGroupName() != null && !botGroup.getGroupName().startsWith("公群")) {
+            startPage2((Integer) botGroup.getParams().get("pageNum"), (Integer) botGroup.getParams().get("pageSize"));
+        }
         List<BotGroup> list = botGroupService.selectBotGroupList(botGroup);
         return getDataTable(list);
     }

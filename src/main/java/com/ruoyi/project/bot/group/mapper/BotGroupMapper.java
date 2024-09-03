@@ -28,6 +28,14 @@ public interface BotGroupMapper
     public List<BotGroup> selectBotGroupList(BotGroup botGroup);
 
     /**
+     * 分词查询群组管理列表
+     *
+     * @param botGroup 群组管理
+     * @return 群组管理集合
+     */
+    public List<BotGroup> selectBotGroupListByGroupName(BotGroup botGroup);
+
+    /**
      * 新增群组管理
      * 
      * @param botGroup 群组管理

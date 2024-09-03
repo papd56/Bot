@@ -41,7 +41,7 @@ public class BotGroupServiceImpl implements IBotGroupService
     @Override
     public List<BotGroup> selectBotGroupList(BotGroup botGroup)
     {
-        return botGroupMapper.selectBotGroupList(botGroup);
+        return botGroupMapper.selectBotGroupListByGroupName(botGroup);
     }
 
     /**
