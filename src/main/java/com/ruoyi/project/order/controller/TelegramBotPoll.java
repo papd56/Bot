@@ -168,6 +168,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
                             "交易金额：100u\n" +
                             "订单完成时间：1天");
                     execute(sendMessage);
+                    return;
                 }
                 //获取报备用户名称
                 BotUserList botUserList2 = null;
@@ -387,7 +388,7 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
         InlineKeyboardButton button1 = new InlineKeyboardButton();
         button1.setText("确认");
         button1.setCallbackData("button1");
-        button1.setUrl("https://t.me/hawkins8897bot?start=" + messageId);
+        button1.setUrl("https://t.me/OKXbaobei_bot?start=" + messageId);
         row.add(button1);
         InlineKeyboardButton button2 = new InlineKeyboardButton();
         button2.setText("取消");
