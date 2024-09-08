@@ -371,13 +371,13 @@ public class TelegramBotPoll extends TelegramLongPollingBot {
     @Override
     public String getBotUsername() {
         // 替换为你的 Bot 的用户名
-        return "@hawkins8897bot";
+        return "@OKXbaobei_bot";
     }
 
     @Override
     public String getBotToken() {
         // 替换为你的 Bot 的 Token
-        return "7313816769:AAGbH_WqbZzWov2QKQHO1isgQUR9b0vmvPI";
+        return "7527507809:AAHYJ8KXoTBlUdJZmRfsPdQTeA4MYXnppxY";
     }
 
     private InlineKeyboardMarkup createKeyboard(Integer messageId) {
