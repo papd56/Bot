@@ -12,6 +12,7 @@
     <url>http://www.ruoyi.vip</url>
     <description>机器人管理系统</description>
 
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
